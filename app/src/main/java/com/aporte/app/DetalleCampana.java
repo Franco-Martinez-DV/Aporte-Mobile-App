@@ -2,17 +2,30 @@ package com.aporte.app;
 
 import android.os.Bundle;
 import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.aporte.app.data.api.RetrofitClient;
+import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DetalleCampana extends AppCompatActivity {
 
     private TextView tvCategoria, tvEstado, tvTitulo, tvFechaLimite, tvRecaudado, tvMeta, tvDescripcion;
     private ProgressBar pbProgreso;
-    private Button btnVolver;
+    private EditText etMontoAporte;
+    private Button btnVolver, btnAportar;
+    private Campana campanaActual;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,14 +40,17 @@ public class DetalleCampana extends AppCompatActivity {
         tvMeta = findViewById(R.id.tvDetalleMeta);
         tvDescripcion = findViewById(R.id.tvDetalleDescripcion);
         pbProgreso = findViewById(R.id.pbDetalleProgreso);
+        etMontoAporte = findViewById(R.id.etMontoAporte);
+        btnAportar = findViewById(R.id.btnAportar);
         btnVolver = findViewById(R.id.btnVolver);
 
         btnVolver.setOnClickListener(v -> finish());
 
-        Campana campana = (Campana) getIntent().getSerializableExtra("campana_extra");
+        campanaActual = (Campana) getIntent().getSerializableExtra("campana_extra");
 
-        if (campana != null) {
-            mostrarDatosCampana(campana);
+        if (campanaActual != null) {
+            mostrarDatosCampana(campanaActual);
+            btnAportar.setOnClickListener(v -> realizarAporte());
         }
     }
 
@@ -54,5 +70,52 @@ public class DetalleCampana extends AppCompatActivity {
             if (porcentaje > 100) porcentaje = 100;
         }
         pbProgreso.setProgress(porcentaje);
+    }
+
+    private void realizarAporte() {
+        String montoStr = etMontoAporte.getText().toString().trim();
+
+        if (montoStr.isEmpty()) {
+            Toast.makeText(this, "Ingresá un monto a aportar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double monto = Double.parseDouble(montoStr);
+        if (monto <= 0) {
+            Toast.makeText(this, "El monto debe ser mayor a 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (campanaActual.getId() == null) {
+            Toast.makeText(this, "Error: Campaña sin ID válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnAportar.setEnabled(false);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("monto", monto);
+
+        RetrofitClient.getApiService().registrarAporte(campanaActual.getId(), body).enqueue(new Callback<ApiResponse<Campana>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Campana>> call, Response<ApiResponse<Campana>> response) {
+                btnAportar.setEnabled(true);
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Campana campanaActualizada = response.body().getData();
+                    campanaActual = campanaActualizada;
+
+                    mostrarDatosCampana(campanaActualizada);
+                    Toast.makeText(DetalleCampana.this, "¡Gracias por tu aporte de $" + (int)monto + "!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(DetalleCampana.this, "Error al procesar el aporte", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Campana>> call, Throwable t) {
+                btnAportar.setEnabled(true);
+                Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

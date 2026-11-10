@@ -64,11 +64,10 @@
             android:layout_marginBottom="16dp"
             android:text="Fecha límite: AAAA-MM-DD" />
 
-        <!-- Card de Progreso Financiero -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"
+            android:layout_marginBottom="16dp"
             app:cardCornerRadius="12dp"
             app:cardElevation="2dp">
 
@@ -101,7 +100,6 @@
                     android:layout_height="10dp"
                     android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"
-                    android:progressDrawable="@android:drawable/progress_horizontal"
                     android:max="100" />
 
                 <TextView
@@ -111,6 +109,59 @@
                     android:textColor="#475569"
                     android:textSize="13sp"
                     android:text="Meta: $0" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#F0FDF4"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Simular Aporte"
+                    android:textColor="#166534"
+                    android:textStyle="bold"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <EditText
+                        android:id="@+id/etMontoAporte"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:hint="Monto ($)"
+                        android:inputType="number"
+                        android:text="5000"
+                        android:background="#FFFFFF"
+                        android:padding="10dp"
+                        android:textSize="15sp"
+                        android:layout_marginEnd="8dp"/>
+
+                    <Button
+                        android:id="@+id/btnAportar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Aportar"
+                        android:backgroundTint="#16A34A"
+                        android:textColor="#FFFFFF" />
+                </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -131,7 +182,7 @@
             android:textSize="15sp"
             android:lineSpacingExtra="4dp"
             android:layout_marginBottom="24dp"
-            android:text="Detalle largo de la necesidad..." />
+            android:text="Detalle de la necesidad..." />
 
         <Button
             android:id="@+id/btnVolver"
