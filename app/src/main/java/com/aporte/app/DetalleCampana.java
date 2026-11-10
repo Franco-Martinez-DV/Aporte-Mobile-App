@@ -23,6 +23,16 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.os.Handler;
+import android.os.Looper;
+import android.widget.ImageView;
+import java.io.InputStream;
+import java.net.URL;
+import java.util.concurrent.Executors;
+
 public class DetalleCampana extends AppCompatActivity {
 
     private TextView tvCategoria, tvEstado, tvTitulo, tvFechaLimite, tvRecaudado, tvMeta, tvDescripcion;
@@ -36,6 +46,8 @@ public class DetalleCampana extends AppCompatActivity {
     private CardView cardCamisetaVirtual;
     private TextView tvEstadoSlots;
     private Button btnVerCamiseta;
+
+    private Button btnCompartirQR;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,6 +68,8 @@ public class DetalleCampana extends AppCompatActivity {
         cardCamisetaVirtual = findViewById(R.id.cardCamisetaVirtual);
         tvEstadoSlots = findViewById(R.id.tvEstadoSlots);
         btnVerCamiseta = findViewById(R.id.btnVerCamiseta);
+        btnCompartirQR = findViewById(R.id.btnCompartirQR);
+        btnCompartirQR.setOnClickListener(v -> abrirDialogoCompartirQR());
 
         btnVolver.setOnClickListener(v -> finish());
 
@@ -309,5 +323,69 @@ public class DetalleCampana extends AppCompatActivity {
                 Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void abrirDialogoCompartirQR() {
+        if (campanaActual == null) return;
+
+        String urlCampana = "https://aporte.app/campana/" + campanaActual.getId();
+        String qrUrl = "https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=" + urlCampana;
+
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(40, 30, 40, 10);
+        layout.setGravity(android.view.Gravity.CENTER_HORIZONTAL);
+
+        ImageView ivQr = new ImageView(this);
+        android.widget.LinearLayout.LayoutParams params = new android.widget.LinearLayout.LayoutParams(400, 400);
+        ivQr.setLayoutParams(params);
+        ivQr.setContentDescription("Codigo QR de la Campana");
+        layout.addView(ivQr);
+
+        Executors.newSingleThreadExecutor().execute(() -> {
+            try {
+                InputStream in = new URL(qrUrl).openStream();
+                Bitmap bitmap = BitmapFactory.decodeStream(in);
+                new Handler(Looper.getMainLooper()).post(() -> ivQr.setImageBitmap(bitmap));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        });
+
+        TextView tvUrl = new TextView(this);
+        tvUrl.setText(urlCampana);
+        tvUrl.setTextSize(12);
+        tvUrl.setTextColor(android.graphics.Color.parseColor("#0284C7"));
+        tvUrl.setPadding(0, 20, 0, 10);
+        tvUrl.setGravity(android.view.Gravity.CENTER);
+        layout.addView(tvUrl);
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Material de Difusion")
+                .setMessage("Escanea el codigo QR o comparte el enlace oficial con posibles sponsors y donantes.")
+                .setView(layout)
+                .setPositiveButton("Compartir Enlace", (d, which) -> ejecutarCompartirNativo(urlCampana))
+                .setNegativeButton("Cerrar", null)
+                .create();
+
+        dialog.show();
+
+        int colorAzul = android.graphics.Color.parseColor("#0077FF");
+        int colorGris = android.graphics.Color.parseColor("#64748B");
+
+        if (dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE) != null) {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setTextColor(colorAzul);
+        }
+        if (dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE) != null) {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(colorGris);
+        }
+    }
+
+    private void ejecutarCompartirNativo(String url) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        String mensaje = "Apoya la campaña deportiva: " + campanaActual.getTitulo() + "\n\nIngresa al siguiente enlace para colaborar: " + url;
+        intent.putExtra(Intent.EXTRA_TEXT, mensaje);
+        startActivity(Intent.createChooser(intent, "Compartir campaña via"));
     }
 }

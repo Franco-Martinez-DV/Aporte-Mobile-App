@@ -56,6 +56,25 @@
             android:text="Título de la Campaña" />
 
         <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descripción del Proyecto"
+            android:textColor="#0F172A"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:id="@+id/tvDetalleDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#334155"
+            android:textSize="15sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="24dp"
+            android:text="Detalle de la necesidad..." />
+
+        <TextView
             android:id="@+id/tvDetalleFechaLimite"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -209,33 +228,6 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Descripción del Proyecto"
-            android:textColor="#0F172A"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:layout_marginBottom="6dp" />
-
-        <TextView
-            android:id="@+id/tvDetalleDescripcion"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:textColor="#334155"
-            android:textSize="15sp"
-            android:lineSpacingExtra="4dp"
-            android:layout_marginBottom="24dp"
-            android:text="Detalle de la necesidad..." />
-
-        <Button
-            android:id="@+id/btnVolver"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Volver a Campañas"
-            android:backgroundTint="#475569"
-            android:textColor="#FFFFFF" />
-
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -298,6 +290,21 @@
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+        <Button
+            android:id="@+id/btnCompartirQR"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            android:text="Compartir / Código QR"
+            android:backgroundTint="#0284C7"
+            android:textColor="#FFFFFF" />
 
+        <Button
+            android:id="@+id/btnVolver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Volver a Campañas"
+            android:backgroundTint="#475569"
+            android:textColor="#FFFFFF" />
     </LinearLayout>
 </ScrollView>

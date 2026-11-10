@@ -15,7 +15,7 @@ public class SlotIndumentaria implements Serializable {
     private double precio;
 
     @SerializedName("estado")
-    private String estado; // "disponible" | "reservado"
+    private String estado;
 
     @SerializedName("sponsor")
     private Sponsor sponsor;
