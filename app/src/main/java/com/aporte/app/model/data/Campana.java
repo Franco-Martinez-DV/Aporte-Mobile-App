@@ -26,10 +26,18 @@ public class Campana {
 
     @SerializedName("estado")
     private String estado;
-
     public Campana() {}
 
-    // Getters
+    public Campana(String titulo, String descripcion, String categoria, double montoObjetivo, String fechaLimite) {
+        this.titulo = titulo;
+        this.descripcion = descripcion;
+        this.categoria = categoria;
+        this.montoObjetivo = montoObjetivo;
+        this.fechaLimite = fechaLimite;
+        this.recaudado = 0.0;
+        this.estado = "activa";
+    }
+
     public String getId() { return id; }
     public String getTitulo() { return titulo; }
     public String getDescripcion() { return descripcion; }
@@ -38,5 +46,12 @@ public class Campana {
     public double getRecaudado() { return recaudado; }
     public String getFechaLimite() { return fechaLimite; }
     public String getEstado() { return estado; }
+    public void setId(String id) { this.id = id; }
+    public void setTitulo(String titulo) { this.titulo = titulo; }
+    public void setDescripcion(String descripcion) { this.descripcion = descripcion; }
+    public void setCategoria(String categoria) { this.categoria = categoria; }
+    public void setMontoObjetivo(double montoObjetivo) { this.montoObjetivo = montoObjetivo; }
+    public void setRecaudado(double recaudado) { this.recaudado = recaudado; }
+    public void setFechaLimite(String fechaLimite) { this.fechaLimite = fechaLimite; }
+    public void setEstado(String estado) { this.estado = estado; }
 }
-
