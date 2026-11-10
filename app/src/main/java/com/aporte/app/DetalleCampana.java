@@ -1,18 +1,22 @@
 package com.aporte.app;
 
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.cardview.widget.CardView;
 
 import com.aporte.app.data.api.RetrofitClient;
 import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
+import com.aporte.app.model.data.SlotIndumentaria;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import retrofit2.Call;
@@ -28,6 +32,10 @@ public class DetalleCampana extends AppCompatActivity {
     private Campana campanaActual;
     private EditText etConceptoIngresoExterno, etMontoIngresoExterno;
     private Button btnGuardarIngresoExterno;
+
+    private CardView cardCamisetaVirtual;
+    private TextView tvEstadoSlots;
+    private Button btnVerCamiseta;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +53,9 @@ public class DetalleCampana extends AppCompatActivity {
         etMontoAporte = findViewById(R.id.etMontoAporte);
         btnAportar = findViewById(R.id.btnAportar);
         btnVolver = findViewById(R.id.btnVolver);
+        cardCamisetaVirtual = findViewById(R.id.cardCamisetaVirtual);
+        tvEstadoSlots = findViewById(R.id.tvEstadoSlots);
+        btnVerCamiseta = findViewById(R.id.btnVerCamiseta);
 
         btnVolver.setOnClickListener(v -> finish());
 
@@ -78,6 +89,14 @@ public class DetalleCampana extends AppCompatActivity {
             if (porcentaje > 100) porcentaje = 100;
         }
         pbProgreso.setProgress(porcentaje);
+
+        if ("patrocinio".equalsIgnoreCase(c.getTipo())) {
+            cardCamisetaVirtual.setVisibility(View.VISIBLE);
+            actualizarResumenSlots(c);
+            btnVerCamiseta.setOnClickListener(v -> abrirDialogoCamiseta(c));
+        } else {
+            cardCamisetaVirtual.setVisibility(View.GONE);
+        }
     }
 
     private void realizarAporte() {
@@ -169,6 +188,124 @@ public class DetalleCampana extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Campana>> call, Throwable t) {
                 btnGuardarIngresoExterno.setEnabled(true);
+                Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void actualizarResumenSlots(Campana c) {
+        if (c.getSlotsIndumentaria() != null) {
+            int libres = 0;
+            for (SlotIndumentaria s : c.getSlotsIndumentaria()) {
+                if ("disponible".equalsIgnoreCase(s.getEstado())) libres++;
+            }
+            tvEstadoSlots.setText("Espacios publicitarios libres: " + libres + " de " + c.getSlotsIndumentaria().size());
+        }
+    }
+
+    private void abrirDialogoCamiseta(Campana c) {
+        if (c.getSlotsIndumentaria() == null || c.getSlotsIndumentaria().isEmpty()) {
+            Toast.makeText(this, "Esta campaña no posee grilla de indumentaria configurada", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        List<SlotIndumentaria> slots = c.getSlotsIndumentaria();
+        String[] opciones = new String[slots.size()];
+
+        for (int i = 0; i < slots.size(); i++) {
+            SlotIndumentaria s = slots.get(i);
+            if ("reservado".equalsIgnoreCase(s.getEstado())) {
+                opciones[i] = "[OCUPADO] " + s.getPosicion() + " - (" +
+                        (s.getSponsor() != null ? s.getSponsor().getNombreEmpresa() : "Sponsor") + ")";
+            } else {
+                opciones[i] = s.getPosicion() + " - $" + String.format("%,.0f", s.getPrecio());
+            }
+        }
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Seleccionar Espacio Publicitario")
+                .setItems(opciones, (d, which) -> {
+                    SlotIndumentaria slotElegido = slots.get(which);
+                    if ("reservado".equalsIgnoreCase(slotElegido.getEstado())) {
+                        Toast.makeText(this, "Este espacio ya se encuentra ocupado", Toast.LENGTH_SHORT).show();
+                    } else {
+                        mostrarFormularioSponsor(slotElegido);
+                    }
+                })
+                .setNegativeButton("Cerrar", null)
+                .create();
+
+        dialog.show();
+
+        if (dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE) != null) {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(android.graphics.Color.parseColor("#0077FF"));
+        }
+    }
+
+    private void mostrarFormularioSponsor(SlotIndumentaria slot) {
+        android.widget.LinearLayout layout = new android.widget.LinearLayout(this);
+        layout.setOrientation(android.widget.LinearLayout.VERTICAL);
+        layout.setPadding(50, 40, 50, 10);
+
+        final EditText etEmpresa = new EditText(this);
+        etEmpresa.setHint("Nombre / Razón Social del Sponsor");
+        layout.addView(etEmpresa);
+
+        final EditText etCuit = new EditText(this);
+        etCuit.setHint("CUIT (Opcional)");
+        layout.addView(etCuit);
+
+        androidx.appcompat.app.AlertDialog dialog = new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Patrocinar: " + slot.getPosicion())
+                .setMessage("Monto a abonar: $" + String.format("%,.0f", slot.getPrecio()))
+                .setView(layout)
+                .setPositiveButton("Confirmar Patrocinio", (d, which) -> {
+                    String empresa = etEmpresa.getText().toString().trim();
+                    String cuit = etCuit.getText().toString().trim();
+
+                    if (empresa.isEmpty()) {
+                        Toast.makeText(this, "Debes ingresar el nombre de la empresa", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    ejecutarReservaSlot(slot.getIdSlot(), empresa, cuit);
+                })
+                .setNegativeButton("Cancelar", null)
+                .create();
+
+        dialog.show();
+
+        int colorAzul = android.graphics.Color.parseColor("#0077FF");
+        int colorGris = android.graphics.Color.parseColor("#64748B");
+
+        if (dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE) != null) {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setTextColor(colorAzul);
+        }
+        if (dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE) != null) {
+            dialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_NEGATIVE).setTextColor(colorGris);
+        }
+    }
+
+    private void ejecutarReservaSlot(String idSlot, String empresa, String cuit) {
+        Map<String, Object> body = new HashMap<>();
+        body.put("idSlot", idSlot);
+        body.put("nombreEmpresa", empresa);
+        body.put("cuit", cuit);
+
+        RetrofitClient.getApiService().reservarSlot(campanaActual.getId(), body).enqueue(new Callback<ApiResponse<Campana>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Campana>> call, Response<ApiResponse<Campana>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    campanaActual = response.body().getData();
+                    mostrarDatosCampana(campanaActual);
+                    Toast.makeText(DetalleCampana.this, "¡Espacio publicitario reservado!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(DetalleCampana.this, "Error al reservar el espacio", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Campana>> call, Throwable t) {
                 Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
