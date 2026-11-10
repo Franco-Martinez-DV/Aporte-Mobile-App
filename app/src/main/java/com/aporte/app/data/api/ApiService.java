@@ -21,4 +21,6 @@ public interface ApiService {
 
     @POST("campanas/{id}/aportar")
     Call<ApiResponse<Campana>> registrarAporte(@Path("id") String id, @Body Map<String, Object> body);
+    @POST("campanas/{id}/ingreso-externo")
+    Call<ApiResponse<Campana>> registrarIngresoExterno(@Path("id") String id, @Body Map<String, Object> body);
 }

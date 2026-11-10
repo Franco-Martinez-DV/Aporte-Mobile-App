@@ -26,6 +26,8 @@ public class DetalleCampana extends AppCompatActivity {
     private EditText etMontoAporte;
     private Button btnVolver, btnAportar;
     private Campana campanaActual;
+    private EditText etConceptoIngresoExterno, etMontoIngresoExterno;
+    private Button btnGuardarIngresoExterno;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,6 +47,12 @@ public class DetalleCampana extends AppCompatActivity {
         btnVolver = findViewById(R.id.btnVolver);
 
         btnVolver.setOnClickListener(v -> finish());
+
+        etConceptoIngresoExterno = findViewById(R.id.etConceptoIngresoExterno);
+        etMontoIngresoExterno = findViewById(R.id.etMontoIngresoExterno);
+        btnGuardarIngresoExterno = findViewById(R.id.btnGuardarIngresoExterno);
+
+        btnGuardarIngresoExterno.setOnClickListener(v -> realizarIngresoExterno());
 
         campanaActual = (Campana) getIntent().getSerializableExtra("campana_extra");
 
@@ -114,6 +122,53 @@ public class DetalleCampana extends AppCompatActivity {
             @Override
             public void onFailure(Call<ApiResponse<Campana>> call, Throwable t) {
                 btnAportar.setEnabled(true);
+                Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void realizarIngresoExterno() {
+        String concepto = etConceptoIngresoExterno.getText().toString().trim();
+        String montoStr = etMontoIngresoExterno.getText().toString().trim();
+
+        if (concepto.isEmpty() || montoStr.isEmpty()) {
+            Toast.makeText(this, "Completá el concepto y el monto del ingreso", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double monto = Double.parseDouble(montoStr);
+        if (monto <= 0) {
+            Toast.makeText(this, "El monto debe ser mayor a 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        btnGuardarIngresoExterno.setEnabled(false);
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("concepto", concepto);
+        body.put("monto", monto);
+        body.put("fecha", new java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).format(new java.util.Date()));
+
+        RetrofitClient.getApiService().registrarIngresoExterno(campanaActual.getId(), body).enqueue(new Callback<ApiResponse<Campana>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Campana>> call, Response<ApiResponse<Campana>> response) {
+                btnGuardarIngresoExterno.setEnabled(true);
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    Campana campanaActualizada = response.body().getData();
+                    campanaActual = campanaActualizada;
+
+                    mostrarDatosCampana(campanaActualizada);
+                    etConceptoIngresoExterno.setText("");
+                    etMontoIngresoExterno.setText("");
+                    Toast.makeText(DetalleCampana.this, "¡Ingreso externo de $" + (int)monto + " registrado!", Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(DetalleCampana.this, "Error al registrar el ingreso", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Campana>> call, Throwable t) {
+                btnGuardarIngresoExterno.setEnabled(true);
                 Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
