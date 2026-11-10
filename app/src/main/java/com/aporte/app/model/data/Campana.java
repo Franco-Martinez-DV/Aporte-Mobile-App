@@ -1,8 +1,8 @@
 package com.aporte.app.model.data;
 
 import com.google.gson.annotations.SerializedName;
-
-public class Campana {
+import java.io.Serializable;
+public class Campana implements Serializable {
     @SerializedName("id")
     private String id;
 

@@ -25,6 +25,11 @@
         <activity
             android:name=".CrearCampana"
             android:label="Nueva Campaña" />
+
+        <activity
+            android:name=".DetalleCampana"
+            android:label="Detalle de Campaña" />
+
     </application>
 
 </manifest>

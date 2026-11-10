@@ -1,5 +1,6 @@
 package com.aporte.app.ui.adapter;
 
+import android.content.Intent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -7,6 +8,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.aporte.app.DetalleCampana;
 import com.aporte.app.R;
 import com.aporte.app.model.data.Campana;
 
@@ -37,6 +39,12 @@ public class CampanaAdapter extends RecyclerView.Adapter<CampanaAdapter.CampanaV
 
         String montosTexto = "$" + (int)campana.getRecaudado() + " de $" + (int)campana.getMontoObjetivo();
         holder.tvMontos.setText(montosTexto);
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(v.getContext(), DetalleCampana.class);
+            intent.putExtra("campana_extra", campana);
+            v.getContext().startActivity(intent);
+        });
     }
 
     @Override

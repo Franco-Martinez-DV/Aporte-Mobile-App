@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#F8FAFC"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="12dp">
+
+            <TextView
+                android:id="@+id/tvDetalleCategoria"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="#0284C7"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:textSize="12sp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
+                android:text="CATEGORÍA" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+
+            <TextView
+                android:id="@+id/tvDetalleEstado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textColor="#16A34A"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:text="ACTIVA" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvDetalleTitulo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:textColor="#0F172A"
+            android:layout_marginBottom="8dp"
+            android:text="Título de la Campaña" />
+
+        <TextView
+            android:id="@+id/tvDetalleFechaLimite"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#64748B"
+            android:textSize="13sp"
+            android:layout_marginBottom="16dp"
+            android:text="Fecha límite: AAAA-MM-DD" />
+
+        <!-- Card de Progreso Financiero -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Monto Recaudado"
+                    android:textColor="#64748B"
+                    android:textSize="13sp" />
+
+                <TextView
+                    android:id="@+id/tvDetalleRecaudado"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:textColor="#16A34A"
+                    android:text="$0" />
+
+                <ProgressBar
+                    android:id="@+id/pbDetalleProgreso"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="10dp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:progressDrawable="@android:drawable/progress_horizontal"
+                    android:max="100" />
+
+                <TextView
+                    android:id="@+id/tvDetalleMeta"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:textColor="#475569"
+                    android:textSize="13sp"
+                    android:text="Meta: $0" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Descripción del Proyecto"
+            android:textColor="#0F172A"
+            android:textStyle="bold"
+            android:textSize="16sp"
+            android:layout_marginBottom="6dp" />
+
+        <TextView
+            android:id="@+id/tvDetalleDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="#334155"
+            android:textSize="15sp"
+            android:lineSpacingExtra="4dp"
+            android:layout_marginBottom="24dp"
+            android:text="Detalle largo de la necesidad..." />
+
+        <Button
+            android:id="@+id/btnVolver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Volver a Campañas"
+            android:backgroundTint="#475569"
+            android:textColor="#FFFFFF" />
+
+    </LinearLayout>
+</ScrollView>
