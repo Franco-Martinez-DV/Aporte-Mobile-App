@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Map;
 import retrofit2.Call;
 import retrofit2.http.Body;
+import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
@@ -19,8 +20,12 @@ public interface ApiService {
     @POST("campanas")
     Call<ApiResponse<Campana>> crearCampana(@Body Campana campana);
 
+    @DELETE("campanas/{id}")
+    Call<ApiResponse<Object>> eliminarCampana(@Path("id") String id);
+
     @POST("campanas/{id}/aportar")
     Call<ApiResponse<Campana>> registrarAporte(@Path("id") String id, @Body Map<String, Object> body);
+
     @POST("campanas/{id}/ingreso-externo")
     Call<ApiResponse<Campana>> registrarIngresoExterno(@Path("id") String id, @Body Map<String, Object> body);
 

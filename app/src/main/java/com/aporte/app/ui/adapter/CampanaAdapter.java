@@ -11,6 +11,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.aporte.app.DetalleCampana;
 import com.aporte.app.R;
 import com.aporte.app.model.data.Campana;
+import com.aporte.app.utils.FormatUtils;
 
 import java.util.List;
 
@@ -35,10 +36,8 @@ public class CampanaAdapter extends RecyclerView.Adapter<CampanaAdapter.CampanaV
         holder.tvTitulo.setText(campana.getTitulo());
         holder.tvDescripcion.setText(campana.getDescripcion());
         holder.tvCategoria.setText(campana.getCategoria() != null ? campana.getCategoria().toUpperCase() : "GENERAL");
-        holder.tvFechaLimite.setText("Límite: " + campana.getFechaLimite());
-
-        String montosTexto = "$" + (int)campana.getRecaudado() + " de $" + (int)campana.getMontoObjetivo();
-        holder.tvMontos.setText(montosTexto);
+        holder.tvFechaLimite.setText(FormatUtils.formatearFechaLimite(campana.getFechaLimite()));
+        holder.tvMontos.setText(FormatUtils.formatearProgresoMontos(campana.getRecaudado(), campana.getMontoObjetivo()));
 
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(v.getContext(), DetalleCampana.class);

@@ -6,11 +6,10 @@ import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -20,10 +19,13 @@ import com.aporte.app.data.api.RetrofitClient;
 import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
 import com.aporte.app.ui.adapter.CampanaAdapter;
+import com.google.android.material.chip.Chip;
+import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.List;
+
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -37,8 +39,10 @@ public class MainActivity extends AppCompatActivity {
     private FloatingActionButton fabCrearCampana;
 
     private EditText etBuscarCampana;
-    private Spinner spFiltroCategoria;
+    private ChipGroup chipGroupCategorias;
+    private TextView tvSinResultados;
 
+    private String categoriaSeleccionada = "Todas";
     private List<Campana> listaCompletaCampanas = new ArrayList<>();
 
     @Override
@@ -50,15 +54,12 @@ public class MainActivity extends AppCompatActivity {
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         fabCrearCampana = findViewById(R.id.fabCrearCampana);
         etBuscarCampana = findViewById(R.id.etBuscarCampana);
-        spFiltroCategoria = findViewById(R.id.spFiltroCategoria);
+        chipGroupCategorias = findViewById(R.id.chipGroupCategorias);
+        tvSinResultados = findViewById(R.id.tvSinResultados);
 
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         adapter = new CampanaAdapter(new ArrayList<>());
         recyclerView.setAdapter(adapter);
-
-        String[] categoriasFiltro = {"Todas las categorías", "Deportista Individual", "Club", "Liga/Torneo"};
-        ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categoriasFiltro);
-        spFiltroCategoria.setAdapter(spinnerAdapter);
 
         swipeRefreshLayout.setOnRefreshListener(this::cargarCampanasDesdeApi);
 
@@ -80,14 +81,14 @@ public class MainActivity extends AppCompatActivity {
             public void afterTextChanged(Editable s) {}
         });
 
-        spFiltroCategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                aplicarFiltros();
+        chipGroupCategorias.setOnCheckedStateChangeListener((group, checkedIds) -> {
+            if (!checkedIds.isEmpty()) {
+                Chip chipSeleccionado = findViewById(checkedIds.get(0));
+                if (chipSeleccionado != null) {
+                    categoriaSeleccionada = chipSeleccionado.getText().toString();
+                    aplicarFiltros();
+                }
             }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
         });
     }
 
@@ -103,7 +104,9 @@ public class MainActivity extends AppCompatActivity {
             public void onResponse(Call<ApiResponse<List<Campana>>> call, Response<ApiResponse<List<Campana>>> response) {
                 swipeRefreshLayout.setRefreshing(false);
                 if (response.isSuccessful() && response.body() != null) {
-                    listaCompletaCampanas = response.body().getData();
+                    listaCompletaCampanas = response.body().getData() != null
+                            ? response.body().getData()
+                            : new ArrayList<>();
                     aplicarFiltros();
                 } else {
                     Log.e(TAG, "Error HTTP: " + response.code());
@@ -120,15 +123,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void aplicarFiltros() {
         String texto = etBuscarCampana.getText().toString().trim().toLowerCase();
-        String categoriaSeleccionada = spFiltroCategoria.getSelectedItem().toString();
-
         List<Campana> listaFiltrada = new ArrayList<>();
 
         for (Campana c : listaCompletaCampanas) {
-            boolean coincideTexto = c.getTitulo().toLowerCase().contains(texto) ||
+            boolean coincideTexto = (c.getTitulo() != null && c.getTitulo().toLowerCase().contains(texto)) ||
                     (c.getDescripcion() != null && c.getDescripcion().toLowerCase().contains(texto));
 
-            boolean coincideCategoria = categoriaSeleccionada.equals("Todas las categorías") ||
+            boolean coincideCategoria = categoriaSeleccionada.equals("Todas") ||
                     (c.getCategoria() != null && c.getCategoria().equalsIgnoreCase(categoriaSeleccionada));
 
             if (coincideTexto && coincideCategoria) {
@@ -137,5 +138,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         adapter.actualizarLista(listaFiltrada);
+        tvSinResultados.setVisibility(listaFiltrada.isEmpty() ? View.VISIBLE : View.GONE);
     }
 }

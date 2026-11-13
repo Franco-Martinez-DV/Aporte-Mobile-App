@@ -32,6 +32,9 @@ public class Campana implements Serializable {
 
     @SerializedName("slotsIndumentaria")
     private java.util.List<SlotIndumentaria> slotsIndumentaria;
+
+    @SerializedName("ingresosExternos")
+    private java.util.List<IngresoExterno> ingresosExternos;
     public Campana() {}
 
     public Campana(String titulo, String descripcion, String categoria, double montoObjetivo, String fechaLimite) {
@@ -65,6 +68,11 @@ public class Campana implements Serializable {
     public void setEstado(String estado) { this.estado = estado; }
 
     public void setTipo(String tipo) { this.tipo = tipo; }
+
+    public java.util.List<IngresoExterno> getIngresosExternos() { return ingresosExternos; }
+    public void setIngresosExternos(java.util.List<IngresoExterno> ingresosExternos) {
+        this.ingresosExternos = ingresosExternos;
+    }
 
     public java.util.List<SlotIndumentaria> getSlotsIndumentaria() { return slotsIndumentaria; }
     public void setSlotsIndumentaria(java.util.List<SlotIndumentaria> slotsIndumentaria) {

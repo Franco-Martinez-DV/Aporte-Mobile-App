@@ -1,5 +1,6 @@
 package com.aporte.app;
 
+import android.app.DatePickerDialog;
 import android.os.Bundle;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -11,6 +12,10 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.aporte.app.data.api.RetrofitClient;
 import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
+import com.aporte.app.utils.FormatUtils;
+
+import java.util.Calendar;
+import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -38,7 +43,27 @@ public class CrearCampana extends AppCompatActivity {
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categorias);
         spCategoria.setAdapter(adapter);
 
+        etFechaLimite.setFocusable(false);
+        etFechaLimite.setClickable(true);
+        etFechaLimite.setOnClickListener(v -> abrirSelectorFecha());
+
         btnGuardar.setOnClickListener(v -> guardarCampana());
+    }
+
+    private void abrirSelectorFecha() {
+        Calendar calendario = Calendar.getInstance();
+        DatePickerDialog datePicker = new DatePickerDialog(
+                this,
+                (view, year, month, dayOfMonth) -> {
+                    String fechaFormateada = String.format(Locale.getDefault(), "%04d-%02d-%02d", year, month + 1, dayOfMonth);
+                    etFechaLimite.setText(fechaFormateada);
+                },
+                calendario.get(Calendar.YEAR),
+                calendario.get(Calendar.MONTH),
+                calendario.get(Calendar.DAY_OF_MONTH)
+        );
+        datePicker.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
+        datePicker.show();
     }
 
     private void guardarCampana() {
@@ -53,7 +78,23 @@ public class CrearCampana extends AppCompatActivity {
             return;
         }
 
-        double montoObjetivo = Double.parseDouble(montoStr);
+        double montoObjetivo;
+        try {
+            montoObjetivo = Double.parseDouble(montoStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Ingresá un monto objetivo numérico válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (montoObjetivo < 10000) {
+            Toast.makeText(this, "El monto objetivo mínimo es de $10.000", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!FormatUtils.esFechaValidaNoPasada(fechaLimite)) {
+            Toast.makeText(this, "La fecha límite debe ser hoy o una fecha futura (AAAA-MM-DD)", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
         Campana nuevaCampana = new Campana(titulo, descripcion, categoria, montoObjetivo, fechaLimite);
 
