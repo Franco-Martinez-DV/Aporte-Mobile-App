@@ -45,6 +45,16 @@
                 android:text="ACTIVA" />
         </LinearLayout>
 
+        <ImageView
+            android:id="@+id/ivDetallePortada"
+            android:layout_width="match_parent"
+            android:layout_height="190dp"
+            android:scaleType="centerCrop"
+            android:background="#E2E8F0"
+            android:visibility="gone"
+            android:layout_marginBottom="12dp"
+            android:contentDescription="Portada de la campaña" />
+
         <TextView
             android:id="@+id/tvDetalleTitulo"
             android:layout_width="match_parent"

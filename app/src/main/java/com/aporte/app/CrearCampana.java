@@ -1,18 +1,25 @@
 package com.aporte.app;
 
 import android.app.DatePickerDialog;
+import android.net.Uri;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Spinner;
 import android.widget.Toast;
+
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.aporte.app.data.api.RetrofitClient;
 import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
 import com.aporte.app.utils.FormatUtils;
+import com.aporte.app.utils.ImageHelper;
 
 import java.util.Calendar;
 import java.util.Locale;
@@ -25,7 +32,14 @@ public class CrearCampana extends AppCompatActivity {
 
     private EditText etTitulo, etDescripcion, etMontoObjetivo, etFechaLimite;
     private Spinner spCategoria;
-    private Button btnGuardar;
+    private Button btnGuardar, btnSeleccionarImagen, btnQuitarImagen;
+    private ImageView ivPreviewPortada;
+
+    private String imagenUrlSubida = "";
+    private boolean subiendoImagen = false;
+
+    private final ActivityResultLauncher<String> selectorGaleria =
+            registerForActivityResult(new ActivityResultContracts.GetContent(), this::procesarImagenSeleccionada);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +52,9 @@ public class CrearCampana extends AppCompatActivity {
         etFechaLimite = findViewById(R.id.etFechaLimite);
         spCategoria = findViewById(R.id.spCategoria);
         btnGuardar = findViewById(R.id.btnGuardar);
+        btnSeleccionarImagen = findViewById(R.id.btnSeleccionarImagen);
+        btnQuitarImagen = findViewById(R.id.btnQuitarImagen);
+        ivPreviewPortada = findViewById(R.id.ivPreviewPortada);
 
         String[] categorias = {"Deportista Individual", "Club", "Liga/Torneo"};
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categorias);
@@ -47,7 +64,51 @@ public class CrearCampana extends AppCompatActivity {
         etFechaLimite.setClickable(true);
         etFechaLimite.setOnClickListener(v -> abrirSelectorFecha());
 
+        btnSeleccionarImagen.setOnClickListener(v -> selectorGaleria.launch("image/*"));
+        btnQuitarImagen.setOnClickListener(v -> quitarImagen());
         btnGuardar.setOnClickListener(v -> guardarCampana());
+    }
+
+    private void procesarImagenSeleccionada(Uri uri) {
+        if (uri == null) return;
+
+        ivPreviewPortada.setImageURI(uri);
+        ivPreviewPortada.setVisibility(View.VISIBLE);
+        btnQuitarImagen.setVisibility(View.VISIBLE);
+
+        subiendoImagen = true;
+        btnGuardar.setEnabled(false);
+        btnGuardar.setText("Subiendo imagen...");
+        btnSeleccionarImagen.setEnabled(false);
+
+        ImageHelper.subirImagenCloudinary(this, uri, new ImageHelper.UploadCallback() {
+            @Override
+            public void onSuccess(String secureUrl) {
+                imagenUrlSubida = secureUrl;
+                subiendoImagen = false;
+                btnGuardar.setEnabled(true);
+                btnGuardar.setText("Publicar Campaña");
+                btnSeleccionarImagen.setEnabled(true);
+                Toast.makeText(CrearCampana.this, "Imagen cargada correctamente", Toast.LENGTH_SHORT).show();
+            }
+
+            @Override
+            public void onError(String mensaje) {
+                subiendoImagen = false;
+                btnGuardar.setEnabled(true);
+                btnGuardar.setText("Publicar Campaña");
+                btnSeleccionarImagen.setEnabled(true);
+                quitarImagen();
+                Toast.makeText(CrearCampana.this, mensaje, Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+
+    private void quitarImagen() {
+        imagenUrlSubida = "";
+        ivPreviewPortada.setImageDrawable(null);
+        ivPreviewPortada.setVisibility(View.GONE);
+        btnQuitarImagen.setVisibility(View.GONE);
     }
 
     private void abrirSelectorFecha() {
@@ -67,6 +128,8 @@ public class CrearCampana extends AppCompatActivity {
     }
 
     private void guardarCampana() {
+        if (subiendoImagen) return;
+
         String titulo = etTitulo.getText().toString().trim();
         String descripcion = etDescripcion.getText().toString().trim();
         String categoria = spCategoria.getSelectedItem().toString();
@@ -97,6 +160,7 @@ public class CrearCampana extends AppCompatActivity {
         }
 
         Campana nuevaCampana = new Campana(titulo, descripcion, categoria, montoObjetivo, fechaLimite);
+        nuevaCampana.setImagenUrl(imagenUrlSubida);
 
         btnGuardar.setEnabled(false);
 

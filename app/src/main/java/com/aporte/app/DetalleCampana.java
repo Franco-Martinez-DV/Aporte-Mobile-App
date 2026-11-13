@@ -26,6 +26,7 @@ import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
 import com.aporte.app.model.data.SlotIndumentaria;
 import com.aporte.app.utils.FormatUtils;
+import com.aporte.app.utils.ImageHelper;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -55,6 +56,8 @@ public class DetalleCampana extends AppCompatActivity {
 
     private TextView tvResumenTransparencia;
     private Button btnVerTransparencia;
+
+    private ImageView ivDetallePortada;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -90,6 +93,8 @@ public class DetalleCampana extends AppCompatActivity {
         btnVolver.setOnClickListener(v -> finish());
         btnGuardarIngresoExterno.setOnClickListener(v -> realizarIngresoExterno());
 
+        ivDetallePortada = findViewById(R.id.ivDetallePortada);
+
         campanaActual = (Campana) getIntent().getSerializableExtra("campana_extra");
 
         if (campanaActual != null) {
@@ -99,6 +104,7 @@ public class DetalleCampana extends AppCompatActivity {
     }
 
     private void mostrarDatosCampana(Campana c) {
+        ImageHelper.cargarImagen(c.getImagenUrl(), ivDetallePortada);
         tvTitulo.setText(c.getTitulo());
         tvDescripcion.setText(c.getDescripcion());
         tvCategoria.setText(c.getCategoria() != null ? c.getCategoria().toUpperCase() : "GENERAL");
