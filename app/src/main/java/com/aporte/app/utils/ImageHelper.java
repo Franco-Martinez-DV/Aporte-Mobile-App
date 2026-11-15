@@ -136,4 +136,72 @@ public class ImageHelper {
         int nuevoAlto = Math.round(alto * ratio);
         return Bitmap.createScaledBitmap(bitmap, maxAncho, nuevoAlto, true);
     }
+
+    public static void subirComprobanteCloudinary(Context context, Uri fileUri, UploadCallback callback) {
+        executor.execute(() -> {
+            try {
+                String mimeType = context.getContentResolver().getType(fileUri);
+                if (mimeType == null) mimeType = "application/pdf";
+
+                byte[] bytesArchivo;
+                String nombreArchivo;
+
+                if (mimeType.startsWith("image/")) {
+                    InputStream is = context.getContentResolver().openInputStream(fileUri);
+                    Bitmap original = BitmapFactory.decodeStream(is);
+                    if (is != null) is.close();
+                    if (original == null) {
+                        mainHandler.post(() -> callback.onError("No se pudo leer la imagen seleccionada"));
+                        return;
+                    }
+                    Bitmap escalado = redimensionarSiEsNecesario(original, 1400);
+                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                    escalado.compress(Bitmap.CompressFormat.JPEG, 82, baos);
+                    bytesArchivo = baos.toByteArray();
+                    nombreArchivo = "factura.jpg";
+                    mimeType = "image/jpeg";
+                } else {
+                    InputStream is = context.getContentResolver().openInputStream(fileUri);
+                    if (is == null) {
+                        mainHandler.post(() -> callback.onError("No se pudo abrir el archivo PDF"));
+                        return;
+                    }
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                    byte[] data = new byte[8192];
+                    int nRead;
+                    while ((nRead = is.read(data, 0, data.length)) != -1) {
+                        buffer.write(data, 0, nRead);
+                    }
+                    is.close();
+                    bytesArchivo = buffer.toByteArray();
+                    nombreArchivo = "factura.pdf";
+                }
+
+                RequestBody archivoBody = RequestBody.create(MediaType.parse(mimeType), bytesArchivo);
+                MultipartBody requestBody = new MultipartBody.Builder()
+                        .setType(MultipartBody.FORM)
+                        .addFormDataPart("file", nombreArchivo, archivoBody)
+                        .addFormDataPart("upload_preset", UPLOAD_PRESET)
+                        .addFormDataPart("folder", "aporte_comprobantes")
+                        .build();
+
+                Request request = new Request.Builder()
+                        .url("https://api.cloudinary.com/v1_1/" + CLOUD_NAME + "/auto/upload")
+                        .post(requestBody)
+                        .build();
+
+                try (Response response = httpClient.newCall(request).execute()) {
+                    if (!response.isSuccessful() || response.body() == null) {
+                        mainHandler.post(() -> callback.onError("Error al subir la factura a Cloudinary"));
+                        return;
+                    }
+                    JSONObject json = new JSONObject(response.body().string());
+                    String secureUrl = json.getString("secure_url");
+                    mainHandler.post(() -> callback.onSuccess(secureUrl));
+                }
+            } catch (Exception e) {
+                mainHandler.post(() -> callback.onError("Error al procesar comprobante: " + e.getMessage()));
+            }
+        });
+    }
 }

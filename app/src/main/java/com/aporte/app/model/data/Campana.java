@@ -38,6 +38,9 @@ public class Campana implements Serializable {
 
     @SerializedName("imagenUrl")
     private String imagenUrl;
+
+    @SerializedName("gastos")
+    private java.util.List<Gasto> gastos;
     public Campana() {}
 
     public Campana(String titulo, String descripcion, String categoria, double montoObjetivo, String fechaLimite) {
@@ -81,6 +84,9 @@ public class Campana implements Serializable {
     public void setSlotsIndumentaria(java.util.List<SlotIndumentaria> slotsIndumentaria) {
         this.slotsIndumentaria = slotsIndumentaria;
 }
+
+    public java.util.List<Gasto> getGastos() { return gastos; }
+    public void setGastos(java.util.List<Gasto> gastos) { this.gastos = gastos; }
 
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }

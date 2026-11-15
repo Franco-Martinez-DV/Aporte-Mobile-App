@@ -179,6 +179,15 @@
                     android:text="Ver Desglose de Movimientos"
                     android:backgroundTint="#EFF6FF"
                     android:textColor="#0077FF" />
+
+                <Button
+                    android:id="@+id/btnRendirGasto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Rendir Gasto (Subir Factura PDF/Foto)"
+                    android:backgroundTint="#F1F5F9"
+                    android:textColor="#0F172A" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 

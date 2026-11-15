@@ -31,4 +31,7 @@ public interface ApiService {
 
     @POST("campanas/{id}/reservar-slot")
     Call<ApiResponse<Campana>> reservarSlot(@Path("id") String id, @Body Map<String, Object> body);
+
+    @POST("campanas/{id}/gasto")
+    Call<ApiResponse<Campana>> registrarGasto(@Path("id") String id, @Body Map<String, Object> body);
 }
