@@ -1,6 +1,7 @@
 package com.aporte.app.ui.adapter;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -38,6 +39,17 @@ public class CampanaAdapter extends RecyclerView.Adapter<CampanaAdapter.CampanaV
         holder.tvTitulo.setText(campana.getTitulo());
         holder.tvDescripcion.setText(campana.getDescripcion());
         holder.tvCategoria.setText(campana.getCategoria() != null ? campana.getCategoria().toUpperCase() : "GENERAL");
+
+        if ("patrocinio".equalsIgnoreCase(campana.getTipo())) {
+            holder.tvTipoCampana.setText("PATROCINIO");
+            holder.tvTipoCampana.setBackgroundColor(Color.parseColor("#DBEAFE"));
+            holder.tvTipoCampana.setTextColor(Color.parseColor("#1D4ED8"));
+        } else {
+            holder.tvTipoCampana.setText("DONACIÓN");
+            holder.tvTipoCampana.setBackgroundColor(Color.parseColor("#F1F5F9"));
+            holder.tvTipoCampana.setTextColor(Color.parseColor("#475569"));
+        }
+
         holder.tvFechaLimite.setText(FormatUtils.formatearFechaLimite(campana.getFechaLimite()));
         holder.tvMontos.setText(FormatUtils.formatearProgresoMontos(campana.getRecaudado(), campana.getMontoObjetivo()));
         ImageHelper.cargarImagen(campana.getImagenUrl(), holder.ivPortadaCampana);
@@ -60,7 +72,7 @@ public class CampanaAdapter extends RecyclerView.Adapter<CampanaAdapter.CampanaV
     }
 
     public static class CampanaViewHolder extends RecyclerView.ViewHolder {
-        TextView tvTitulo, tvDescripcion, tvCategoria, tvFechaLimite, tvMontos;
+        TextView tvTitulo, tvDescripcion, tvCategoria, tvTipoCampana, tvFechaLimite, tvMontos;
         ImageView ivPortadaCampana;
 
         public CampanaViewHolder(@NonNull View itemView) {
@@ -68,6 +80,7 @@ public class CampanaAdapter extends RecyclerView.Adapter<CampanaAdapter.CampanaV
             tvTitulo = itemView.findViewById(R.id.tvTitulo);
             tvDescripcion = itemView.findViewById(R.id.tvDescripcion);
             tvCategoria = itemView.findViewById(R.id.tvCategoria);
+            tvTipoCampana = itemView.findViewById(R.id.tvTipoCampana);
             tvFechaLimite = itemView.findViewById(R.id.tvFechaLimite);
             tvMontos = itemView.findViewById(R.id.tvMontos);
             ivPortadaCampana = itemView.findViewById(R.id.ivPortadaCampana);

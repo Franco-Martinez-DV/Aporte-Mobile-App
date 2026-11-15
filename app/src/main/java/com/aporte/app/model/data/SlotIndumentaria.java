@@ -8,6 +8,9 @@ public class SlotIndumentaria implements Serializable {
     @SerializedName("idSlot")
     private String idSlot;
 
+    @SerializedName("grupo")
+    private String grupo;
+
     @SerializedName("posicion")
     private String posicion;
 
@@ -32,6 +35,7 @@ public class SlotIndumentaria implements Serializable {
     }
 
     public String getIdSlot() { return idSlot; }
+    public String getGrupo() { return grupo; }
     public String getPosicion() { return posicion; }
     public double getPrecio() { return precio; }
     public String getEstado() { return estado; }

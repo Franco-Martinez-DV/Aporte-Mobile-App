@@ -2,6 +2,8 @@ package com.aporte.app.model.data;
 
 import com.google.gson.annotations.SerializedName;
 import java.io.Serializable;
+import java.util.List;
+
 public class Campana implements Serializable {
     @SerializedName("id")
     private String id;
@@ -30,23 +32,27 @@ public class Campana implements Serializable {
     @SerializedName("tipo")
     private String tipo;
 
+    @SerializedName("modalidadPatrocinio")
+    private String modalidadPatrocinio;
+
     @SerializedName("slotsIndumentaria")
-    private java.util.List<SlotIndumentaria> slotsIndumentaria;
+    private List<SlotIndumentaria> slotsIndumentaria;
 
     @SerializedName("ingresosExternos")
-    private java.util.List<IngresoExterno> ingresosExternos;
+    private List<IngresoExterno> ingresosExternos;
 
     @SerializedName("imagenUrl")
     private String imagenUrl;
 
     @SerializedName("gastos")
-    private java.util.List<Gasto> gastos;
+    private List<Gasto> gastos;
 
     @SerializedName("creadorId")
     private String creadorId;
 
     @SerializedName("creadorEmail")
     private String creadorEmail;
+
     public Campana() {}
 
     public Campana(String titulo, String descripcion, String categoria, double montoObjetivo, String fechaLimite) {
@@ -57,6 +63,7 @@ public class Campana implements Serializable {
         this.fechaLimite = fechaLimite;
         this.recaudado = 0.0;
         this.estado = "activa";
+        this.tipo = "donacion";
     }
 
     public String getId() { return id; }
@@ -67,8 +74,8 @@ public class Campana implements Serializable {
     public double getRecaudado() { return recaudado; }
     public String getFechaLimite() { return fechaLimite; }
     public String getEstado() { return estado; }
-
     public String getTipo() { return tipo; }
+    public String getModalidadPatrocinio() { return modalidadPatrocinio; }
 
     public void setId(String id) { this.id = id; }
     public void setTitulo(String titulo) { this.titulo = titulo; }
@@ -78,21 +85,21 @@ public class Campana implements Serializable {
     public void setRecaudado(double recaudado) { this.recaudado = recaudado; }
     public void setFechaLimite(String fechaLimite) { this.fechaLimite = fechaLimite; }
     public void setEstado(String estado) { this.estado = estado; }
-
     public void setTipo(String tipo) { this.tipo = tipo; }
+    public void setModalidadPatrocinio(String modalidadPatrocinio) { this.modalidadPatrocinio = modalidadPatrocinio; }
 
-    public java.util.List<IngresoExterno> getIngresosExternos() { return ingresosExternos; }
-    public void setIngresosExternos(java.util.List<IngresoExterno> ingresosExternos) {
+    public List<IngresoExterno> getIngresosExternos() { return ingresosExternos; }
+    public void setIngresosExternos(List<IngresoExterno> ingresosExternos) {
         this.ingresosExternos = ingresosExternos;
     }
 
-    public java.util.List<SlotIndumentaria> getSlotsIndumentaria() { return slotsIndumentaria; }
-    public void setSlotsIndumentaria(java.util.List<SlotIndumentaria> slotsIndumentaria) {
+    public List<SlotIndumentaria> getSlotsIndumentaria() { return slotsIndumentaria; }
+    public void setSlotsIndumentaria(List<SlotIndumentaria> slotsIndumentaria) {
         this.slotsIndumentaria = slotsIndumentaria;
-}
+    }
 
-    public java.util.List<Gasto> getGastos() { return gastos; }
-    public void setGastos(java.util.List<Gasto> gastos) { this.gastos = gastos; }
+    public List<Gasto> getGastos() { return gastos; }
+    public void setGastos(List<Gasto> gastos) { this.gastos = gastos; }
 
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }

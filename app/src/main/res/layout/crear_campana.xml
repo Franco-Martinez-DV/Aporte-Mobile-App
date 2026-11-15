@@ -23,6 +23,114 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Categoría"
+            android:textColor="#334155"
+            android:textStyle="bold"/>
+        <Spinner
+            android:id="@+id/spCategoria"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="12dp"/>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Tipo de Campaña"
+            android:textColor="#334155"
+            android:textStyle="bold"
+            android:layout_marginBottom="4dp"/>
+
+        <RadioGroup
+            android:id="@+id/rgTipoCampana"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <RadioButton
+                android:id="@+id/rbTipoDonacion"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:checked="true"
+                android:text="Donación Estándar"
+                android:textColor="#0F172A"/>
+
+            <RadioButton
+                android:id="@+id/rbTipoPatrocinio"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Patrocinio"
+                android:textColor="#0F172A"/>
+        </RadioGroup>
+
+        <LinearLayout
+            android:id="@+id/layoutOpcionesPatrocinio"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:background="#EFF6FF"
+            android:padding="12dp"
+            android:visibility="gone"
+            android:layout_marginBottom="14dp">
+
+            <TextView
+                android:id="@+id/tvTituloOpcionesPatrocinio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Grilla de Indumentaria Oficial (6 espacios)"
+                android:textColor="#1E3A8A"
+                android:textStyle="bold"
+                android:textSize="13sp"
+                android:layout_marginBottom="6dp"/>
+
+            <RadioGroup
+                android:id="@+id/rgModalidadClub"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:layout_marginBottom="6dp">
+
+                <RadioButton
+                    android:id="@+id/rbClubAmbos"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:checked="true"
+                    android:text="Camiseta + Predio (Ambos)"
+                    android:textSize="13sp"
+                    android:textColor="#0F172A"/>
+
+                <RadioButton
+                    android:id="@+id/rbClubCamiseta"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Solo Camiseta"
+                    android:textSize="13sp"
+                    android:textColor="#0F172A"/>
+
+                <RadioButton
+                    android:id="@+id/rbClubInstalaciones"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Solo Instalaciones (Estadio y Paredes)"
+                    android:textSize="13sp"
+                    android:textColor="#0F172A"/>
+            </RadioGroup>
+
+            <TextView
+                android:id="@+id/tvDescripcionOpcionesPatrocinio"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Se habilitarán espacios publicitarios en Pecho Principal, Pecho Secundario, Mangas, Espalda Superior y Zócalo Inferior."
+                android:textColor="#334155"
+                android:textSize="12sp"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Imagen de Portada (Opcional)"
             android:textColor="#334155"
             android:textStyle="bold"
@@ -76,18 +184,6 @@
             android:layout_height="wrap_content"
             android:hint="Ej: Pasajes al Torneo Nacional"
             android:inputType="textCapSentences"
-            android:layout_marginBottom="12dp"/>
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Categoría"
-            android:textColor="#334155"
-            android:textStyle="bold"/>
-        <Spinner
-            android:id="@+id/spCategoria"
-            android:layout_width="match_parent"
-            android:layout_height="48dp"
             android:layout_marginBottom="12dp"/>
 
         <TextView

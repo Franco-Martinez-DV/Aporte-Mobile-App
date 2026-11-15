@@ -5,10 +5,14 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -32,9 +36,12 @@ import retrofit2.Response;
 
 public class CrearCampana extends AppCompatActivity {
 
-    private TextView tvTituloFormulario;
+    private TextView tvTituloFormulario, tvTituloOpcionesPatrocinio, tvDescripcionOpcionesPatrocinio;
     private EditText etTitulo, etDescripcion, etMontoObjetivo, etFechaLimite;
     private Spinner spCategoria;
+    private RadioGroup rgTipoCampana, rgModalidadClub;
+    private RadioButton rbTipoDonacion, rbTipoPatrocinio, rbClubAmbos, rbClubCamiseta, rbClubInstalaciones;
+    private LinearLayout layoutOpcionesPatrocinio;
     private Button btnGuardar, btnCancelarCrear, btnSeleccionarImagen, btnQuitarImagen;
     private ImageView ivPreviewPortada;
 
@@ -59,6 +66,19 @@ public class CrearCampana extends AppCompatActivity {
         etMontoObjetivo = findViewById(R.id.etMontoObjetivo);
         etFechaLimite = findViewById(R.id.etFechaLimite);
         spCategoria = findViewById(R.id.spCategoria);
+
+        rgTipoCampana = findViewById(R.id.rgTipoCampana);
+        rbTipoDonacion = findViewById(R.id.rbTipoDonacion);
+        rbTipoPatrocinio = findViewById(R.id.rbTipoPatrocinio);
+
+        layoutOpcionesPatrocinio = findViewById(R.id.layoutOpcionesPatrocinio);
+        tvTituloOpcionesPatrocinio = findViewById(R.id.tvTituloOpcionesPatrocinio);
+        rgModalidadClub = findViewById(R.id.rgModalidadClub);
+        rbClubAmbos = findViewById(R.id.rbClubAmbos);
+        rbClubCamiseta = findViewById(R.id.rbClubCamiseta);
+        rbClubInstalaciones = findViewById(R.id.rbClubInstalaciones);
+        tvDescripcionOpcionesPatrocinio = findViewById(R.id.tvDescripcionOpcionesPatrocinio);
+
         btnGuardar = findViewById(R.id.btnGuardar);
         btnCancelarCrear = findViewById(R.id.btnCancelarCrear);
         btnSeleccionarImagen = findViewById(R.id.btnSeleccionarImagen);
@@ -67,6 +87,19 @@ public class CrearCampana extends AppCompatActivity {
 
         ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categorias);
         spCategoria.setAdapter(adapter);
+
+        spCategoria.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                actualizarPanelPatrocinio();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {}
+        });
+
+        rgTipoCampana.setOnCheckedChangeListener((group, checkedId) -> actualizarPanelPatrocinio());
+        rgModalidadClub.setOnCheckedChangeListener((group, checkedId) -> actualizarPanelPatrocinio());
 
         etFechaLimite.setFocusable(false);
         etFechaLimite.setClickable(true);
@@ -81,7 +114,60 @@ public class CrearCampana extends AppCompatActivity {
         if (campanaEditar != null) {
             modoEdicion = true;
             cargarDatosEdicion(campanaEditar);
+        } else {
+            actualizarPanelPatrocinio();
         }
+    }
+
+    private void actualizarPanelPatrocinio() {
+        String categoria = spCategoria.getSelectedItem() != null
+                ? spCategoria.getSelectedItem().toString()
+                : "Deportista Individual";
+
+        if ("Club".equals(categoria)) {
+            rbTipoPatrocinio.setText("Patrocinio de Club");
+        } else if ("Liga/Torneo".equals(categoria)) {
+            rbTipoPatrocinio.setText("Patrocinio de Liga/Torneo");
+        } else {
+            rbTipoPatrocinio.setText("Camiseta Virtual");
+        }
+
+        boolean esPatrocinio = rbTipoPatrocinio.isChecked();
+        if (!esPatrocinio) {
+            layoutOpcionesPatrocinio.setVisibility(View.GONE);
+            return;
+        }
+
+        layoutOpcionesPatrocinio.setVisibility(View.VISIBLE);
+
+        if ("Club".equals(categoria)) {
+            tvTituloOpcionesPatrocinio.setText("Espacios Publicitarios del Club");
+            rgModalidadClub.setVisibility(modoEdicion ? View.GONE : View.VISIBLE);
+
+            String modalidad = obtenerModalidadClubSeleccionada();
+            if ("camiseta".equals(modalidad)) {
+                tvDescripcionOpcionesPatrocinio.setText("Incluye los 6 espacios publicitarios en la camiseta oficial del club.");
+            } else if ("instalaciones".equals(modalidad)) {
+                tvDescripcionOpcionesPatrocinio.setText("Incluye Naming del Estadio/Predio y 3 espacios de cartelería en paredes del club.");
+            } else {
+                tvDescripcionOpcionesPatrocinio.setText("Incluye los 6 espacios en la camiseta del club más Naming del Estadio/Predio y 3 espacios de cartelería en paredes.");
+            }
+        } else if ("Liga/Torneo".equals(categoria)) {
+            tvTituloOpcionesPatrocinio.setText("Grilla de Patrocinio de Liga / Torneo (4 espacios)");
+            rgModalidadClub.setVisibility(View.GONE);
+            tvDescripcionOpcionesPatrocinio.setText("Se habilitarán Naming Oficial de la Liga/Torneo, Auspicio de Premios y Trofeos, y 2 espacios de Cartelería del evento.");
+        } else {
+            tvTituloOpcionesPatrocinio.setText("Grilla de Indumentaria Oficial (6 espacios)");
+            rgModalidadClub.setVisibility(View.GONE);
+            tvDescripcionOpcionesPatrocinio.setText("Se habilitarán espacios publicitarios en Pecho Principal, Pecho Secundario, Mangas, Espalda Superior y Zócalo Inferior.");
+        }
+    }
+
+    private String obtenerModalidadClubSeleccionada() {
+        int idSeleccionado = rgModalidadClub.getCheckedRadioButtonId();
+        if (idSeleccionado == R.id.rbClubCamiseta) return "camiseta";
+        if (idSeleccionado == R.id.rbClubInstalaciones) return "instalaciones";
+        return "ambos";
     }
 
     private void cargarDatosEdicion(Campana c) {
@@ -101,6 +187,26 @@ public class CrearCampana extends AppCompatActivity {
                 }
             }
         }
+
+        if ("patrocinio".equalsIgnoreCase(c.getTipo())) {
+            rbTipoPatrocinio.setChecked(true);
+            spCategoria.setEnabled(false);
+        } else {
+            rbTipoDonacion.setChecked(true);
+        }
+
+        rbTipoDonacion.setEnabled(false);
+        rbTipoPatrocinio.setEnabled(false);
+
+        if ("camiseta".equalsIgnoreCase(c.getModalidadPatrocinio())) {
+            rbClubCamiseta.setChecked(true);
+        } else if ("instalaciones".equalsIgnoreCase(c.getModalidadPatrocinio())) {
+            rbClubInstalaciones.setChecked(true);
+        } else {
+            rbClubAmbos.setChecked(true);
+        }
+
+        actualizarPanelPatrocinio();
 
         if (c.getImagenUrl() != null && !c.getImagenUrl().trim().isEmpty()) {
             imagenUrlSubida = c.getImagenUrl();
@@ -202,6 +308,13 @@ public class CrearCampana extends AppCompatActivity {
 
         Campana datosCampana = new Campana(titulo, descripcion, categoria, montoObjetivo, fechaLimite);
         datosCampana.setImagenUrl(imagenUrlSubida);
+
+        String tipoSeleccionado = rbTipoPatrocinio.isChecked() ? "patrocinio" : "donacion";
+        datosCampana.setTipo(tipoSeleccionado);
+
+        if ("patrocinio".equals(tipoSeleccionado) && "Club".equals(categoria)) {
+            datosCampana.setModalidadPatrocinio(obtenerModalidadClubSeleccionada());
+        }
 
         btnGuardar.setEnabled(false);
 

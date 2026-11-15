@@ -41,10 +41,23 @@
                     android:background="#0077FF"
                     android:textColor="#FFFFFF"
                     android:textStyle="bold"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="4dp"
                     android:text="CLUB" />
+
+                <TextView
+                    android:id="@+id/tvTipoCampana"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:background="#F1F5F9"
+                    android:textColor="#475569"
+                    android:textStyle="bold"
+                    android:textSize="11sp"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:text="DONACIÓN" />
 
                 <View
                     android:layout_width="0dp"

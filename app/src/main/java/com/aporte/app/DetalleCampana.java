@@ -56,7 +56,7 @@ import retrofit2.Response;
 
 public class DetalleCampana extends AppCompatActivity {
 
-    private TextView tvCategoria, tvEstado, tvTitulo, tvFechaLimite, tvRecaudado, tvMeta, tvDescripcion;
+    private TextView tvCategoria, tvDetalleTipo, tvEstado, tvTitulo, tvFechaLimite, tvRecaudado, tvMeta, tvDescripcion;
     private ProgressBar pbProgreso;
     private EditText etMontoAporte;
     private Button btnVolver, btnAportar, btnEditarCampana, btnEliminarCampana;
@@ -65,7 +65,7 @@ public class DetalleCampana extends AppCompatActivity {
     private Button btnGuardarIngresoExterno;
 
     private CardView cardSimularAporte, cardCamisetaVirtual, cardIngresoExterno;
-    private TextView tvEstadoSlots;
+    private TextView tvTituloPatrocinio, tvEstadoSlots;
     private Button btnVerCamiseta;
     private Button btnCompartirQR;
 
@@ -107,6 +107,7 @@ public class DetalleCampana extends AppCompatActivity {
         setContentView(R.layout.detalle_campana);
 
         tvCategoria = findViewById(R.id.tvDetalleCategoria);
+        tvDetalleTipo = findViewById(R.id.tvDetalleTipo);
         tvEstado = findViewById(R.id.tvDetalleEstado);
         tvTitulo = findViewById(R.id.tvDetalleTitulo);
         tvFechaLimite = findViewById(R.id.tvDetalleFechaLimite);
@@ -124,6 +125,7 @@ public class DetalleCampana extends AppCompatActivity {
         cardCamisetaVirtual = findViewById(R.id.cardCamisetaVirtual);
         cardIngresoExterno = findViewById(R.id.cardIngresoExterno);
 
+        tvTituloPatrocinio = findViewById(R.id.tvTituloPatrocinio);
         tvEstadoSlots = findViewById(R.id.tvEstadoSlots);
         btnVerCamiseta = findViewById(R.id.btnVerCamiseta);
         btnCompartirQR = findViewById(R.id.btnCompartirQR);
@@ -169,11 +171,29 @@ public class DetalleCampana extends AppCompatActivity {
                 && c.getCreadorId().equals(usuario.getUid());
     }
 
+    private String obtenerTituloPatrocinioPorCategoria(Campana c) {
+        if (c == null || c.getCategoria() == null) return "Camiseta Virtual";
+        if ("Club".equalsIgnoreCase(c.getCategoria())) return "Espacios de Patrocinio del Club";
+        if ("Liga/Torneo".equalsIgnoreCase(c.getCategoria())) return "Patrocinio de Liga / Torneo";
+        return "Camiseta Virtual";
+    }
+
     private void mostrarDatosCampana(Campana c) {
         ImageHelper.cargarImagen(c.getImagenUrl(), ivDetallePortada);
         tvTitulo.setText(c.getTitulo());
         tvDescripcion.setText(c.getDescripcion());
         tvCategoria.setText(c.getCategoria() != null ? c.getCategoria().toUpperCase() : "GENERAL");
+
+        if ("patrocinio".equalsIgnoreCase(c.getTipo())) {
+            tvDetalleTipo.setText("PATROCINIO");
+            tvDetalleTipo.setBackgroundColor(Color.parseColor("#DBEAFE"));
+            tvDetalleTipo.setTextColor(Color.parseColor("#1D4ED8"));
+        } else {
+            tvDetalleTipo.setText("DONACIÓN");
+            tvDetalleTipo.setBackgroundColor(Color.parseColor("#F1F5F9"));
+            tvDetalleTipo.setTextColor(Color.parseColor("#475569"));
+        }
+
         tvEstado.setText(c.getEstado() != null ? c.getEstado().toUpperCase() : "ACTIVA");
         tvFechaLimite.setText(FormatUtils.formatearFechaLimite(c.getFechaLimite()));
 
@@ -199,6 +219,7 @@ public class DetalleCampana extends AppCompatActivity {
 
             if ("patrocinio".equalsIgnoreCase(c.getTipo())) {
                 cardCamisetaVirtual.setVisibility(View.VISIBLE);
+                tvTituloPatrocinio.setText(obtenerTituloPatrocinioPorCategoria(c));
                 actualizarResumenSlots(c);
                 btnVerCamiseta.setOnClickListener(v -> abrirDialogoCamiseta(c));
             } else {
@@ -379,20 +400,30 @@ public class DetalleCampana extends AppCompatActivity {
         }
 
         if (c.getSlotsIndumentaria() == null || c.getSlotsIndumentaria().isEmpty()) {
-            Toast.makeText(this, "Esta campaña no posee grilla de indumentaria configurada", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Esta campaña no posee espacios publicitarios configurados", Toast.LENGTH_SHORT).show();
             return;
         }
 
         List<SlotIndumentaria> slots = c.getSlotsIndumentaria();
         String[] opciones = new String[slots.size()];
+        boolean esClub = "Club".equalsIgnoreCase(c.getCategoria());
 
         for (int i = 0; i < slots.size(); i++) {
             SlotIndumentaria s = slots.get(i);
+            String prefijoGrupo = "";
+            if (esClub && s.getGrupo() != null) {
+                if ("infraestructura".equalsIgnoreCase(s.getGrupo())) {
+                    prefijoGrupo = "[Predio/Pared] ";
+                } else if ("indumentaria".equalsIgnoreCase(s.getGrupo())) {
+                    prefijoGrupo = "[Camiseta] ";
+                }
+            }
+
             if ("reservado".equalsIgnoreCase(s.getEstado())) {
-                opciones[i] = "[OCUPADO] " + s.getPosicion() + " - (" +
+                opciones[i] = "[OCUPADO] " + prefijoGrupo + s.getPosicion() + " - (" +
                         (s.getSponsor() != null ? s.getSponsor().getNombreEmpresa() : "Sponsor") + ")";
             } else {
-                opciones[i] = s.getPosicion() + " - " + FormatUtils.formatearMoneda(s.getPrecio());
+                opciones[i] = prefijoGrupo + s.getPosicion() + " - " + FormatUtils.formatearMoneda(s.getPrecio());
             }
         }
 
@@ -616,7 +647,7 @@ public class DetalleCampana extends AppCompatActivity {
         StringBuilder detalle = new StringBuilder();
         detalle.append("BALANCE GENERAL\n");
         detalle.append("• Aportes en plataforma: ").append(FormatUtils.formatearMoneda(aportesDirectos)).append("\n");
-        detalle.append("• Patrocinios camiseta: ").append(FormatUtils.formatearMoneda(totalSponsors)).append("\n");
+        detalle.append("• Patrocinios oficiales: ").append(FormatUtils.formatearMoneda(totalSponsors)).append("\n");
         detalle.append("• Ingresos externos: ").append(FormatUtils.formatearMoneda(totalExternos)).append("\n");
         detalle.append("• TOTAL RECAUDADO: ").append(FormatUtils.formatearMoneda(campanaActual.getRecaudado())).append("\n");
         detalle.append("• Gastos rendidos: -").append(FormatUtils.formatearMoneda(totalGastos)).append("\n");
@@ -626,7 +657,7 @@ public class DetalleCampana extends AppCompatActivity {
         detalle.append(sbGastos.length() > 0 ? sbGastos.toString() : "Sin gastos rendidos aún.\n");
         detalle.append("\n");
 
-        detalle.append("SPONSORS EN CAMISETA\n");
+        detalle.append("SPONSORS OFICIALES\n");
         detalle.append(sbSponsors.length() > 0 ? sbSponsors.toString() : "Sin sponsors registrados aún.\n");
         detalle.append("\n");
 
@@ -863,7 +894,7 @@ public class DetalleCampana extends AppCompatActivity {
                 "<div class='qr-seccion'>" +
                 "<img src='" + qrUrl + "' class='qr-img'/>" +
                 "<div class='qr-texto'><h2>¡Sumá tu apoyo a este proyecto!</h2>" +
-                "<p>Escaneá este código QR con la cámara de tu celular para donar o patrocinar un espacio en nuestra indumentaria oficial.</p>" +
+                "<p>Escaneá este código QR con la cámara de tu celular para donar o patrocinar un espacio oficial en nuestra campaña.</p>" +
                 "<div class='url-box'>" + escaparHtml(urlCampana) + "</div></div>" +
                 "</div></div>" +
                 "<div class='footer'>Campaña verificada en plataforma Aporte • ID: " + escaparHtml(campanaActual.getId()) + "</div>" +
