@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "816995307939",
+    "project_id": "aporte-cda16",
+    "storage_bucket": "aporte-cda16.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:816995307939:android:3e989ff0ecd7be42878a16",
+        "android_client_info": {
+          "package_name": "com.aporte.app"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyByCEji31nY2fqWVk-dPIbAD4tvEX4-Bgw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

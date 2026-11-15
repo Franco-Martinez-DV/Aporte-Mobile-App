@@ -41,6 +41,12 @@ public class Campana implements Serializable {
 
     @SerializedName("gastos")
     private java.util.List<Gasto> gastos;
+
+    @SerializedName("creadorId")
+    private String creadorId;
+
+    @SerializedName("creadorEmail")
+    private String creadorEmail;
     public Campana() {}
 
     public Campana(String titulo, String descripcion, String categoria, double montoObjetivo, String fechaLimite) {
@@ -90,4 +96,10 @@ public class Campana implements Serializable {
 
     public String getImagenUrl() { return imagenUrl; }
     public void setImagenUrl(String imagenUrl) { this.imagenUrl = imagenUrl; }
+
+    public String getCreadorId() { return creadorId; }
+    public void setCreadorId(String creadorId) { this.creadorId = creadorId; }
+
+    public String getCreadorEmail() { return creadorEmail; }
+    public void setCreadorEmail(String creadorEmail) { this.creadorEmail = creadorEmail; }
 }

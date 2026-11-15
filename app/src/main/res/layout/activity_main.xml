@@ -1,27 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="#F5F5F5">
+<RelativeLayout android:background="#F5F5F5" android:layout_height="match_parent" android:layout_width="match_parent" xmlns:android="http://schemas.android.com/apk/res/android" xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical"
-        android:padding="8dp">
+    <LinearLayout android:layout_height="match_parent" android:layout_width="match_parent" android:orientation="vertical" android:padding="8dp">
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="APORTE Mobile"
-            android:textSize="22sp"
-            android:textStyle="bold"
-            android:textColor="#0F172A"
-            android:paddingHorizontal="12dp"
-            android:paddingTop="12dp"
-            android:paddingBottom="8dp" />
+        <LinearLayout android:gravity="center_vertical" android:layout_height="wrap_content" android:layout_width="match_parent" android:orientation="horizontal" android:paddingBottom="8dp" android:paddingHorizontal="12dp" android:paddingTop="12dp">
+
+            <TextView android:layout_height="wrap_content" android:layout_weight="1" android:layout_width="0dp" android:text="APORTE Mobile" android:textColor="#0F172A" android:textSize="22sp" android:textStyle="bold"/>
+
+            <Button android:backgroundTint="#0077FF" android:id="@+id/btnSesion" android:layout_height="wrap_content" android:layout_width="wrap_content" android:text="Iniciar Sesión" android:textColor="#FFFFFF" android:textSize="12sp"/>
+        </LinearLayout>
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -34,26 +21,10 @@
             app:strokeColor="#E2E8F0"
             app:strokeWidth="1dp">
 
-            <EditText
-                android:id="@+id/etBuscarCampana"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Buscar por título o palabra clave..."
-                android:inputType="text"
-                android:background="@android:color/transparent"
-                android:drawableStart="@android:drawable/ic_menu_search"
-                android:drawablePadding="8dp"
-                android:padding="12dp"
-                android:textSize="14sp"
-                android:textColor="#0F172A" />
+            <EditText android:background="@android:color/transparent" android:drawablePadding="8dp" android:drawableStart="@android:drawable/ic_menu_search" android:hint="Buscar por título o palabra clave..." android:id="@+id/etBuscarCampana" android:inputType="text" android:layout_height="wrap_content" android:layout_width="match_parent" android:padding="12dp" android:textColor="#0F172A" android:textSize="14sp"/>
         </com.google.android.material.card.MaterialCardView>
 
-        <HorizontalScrollView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:layout_marginHorizontal="8dp"
-            android:layout_marginBottom="8dp">
+        <HorizontalScrollView android:layout_height="wrap_content" android:layout_marginBottom="8dp" android:layout_marginHorizontal="8dp" android:layout_width="match_parent" android:scrollbars="none">
 
             <com.google.android.material.chip.ChipGroup
                 android:id="@+id/chipGroupCategorias"
@@ -99,16 +70,7 @@
             </com.google.android.material.chip.ChipGroup>
         </HorizontalScrollView>
 
-        <TextView
-            android:id="@+id/tvSinResultados"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="No se encontraron campañas con los filtros aplicados."
-            android:textSize="15sp"
-            android:textColor="#64748B"
-            android:gravity="center"
-            android:padding="24dp"
-            android:visibility="gone" />
+        <TextView android:gravity="center" android:id="@+id/tvSinResultados" android:layout_height="wrap_content" android:layout_width="match_parent" android:padding="24dp" android:text="No se encontraron campañas con los filtros aplicados." android:textColor="#64748B" android:textSize="15sp" android:visibility="gone"/>
 
         <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
             android:id="@+id/swipeRefreshLayout"

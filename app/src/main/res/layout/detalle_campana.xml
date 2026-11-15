@@ -64,6 +64,7 @@
             android:textColor="#0F172A"
             android:textSize="22sp"
             android:textStyle="bold" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -187,11 +188,13 @@
                     android:layout_marginTop="8dp"
                     android:text="Rendir Gasto (Subir Factura PDF/Foto)"
                     android:backgroundTint="#F1F5F9"
-                    android:textColor="#0F172A" />
+                    android:textColor="#0F172A"
+                    android:visibility="gone" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardSimularAporte"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
@@ -289,9 +292,11 @@
         </androidx.cardview.widget.CardView>
 
         <androidx.cardview.widget.CardView
+            android:id="@+id/cardIngresoExterno"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="20dp"
+            android:visibility="gone"
             app:cardCornerRadius="12dp"
             app:cardBackgroundColor="#FFFBEB"
             app:cardElevation="2dp">
@@ -350,22 +355,25 @@
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
+
         <Button
             android:id="@+id/btnCompartirQR"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"
+            android:layout_marginBottom="12dp"
             android:text="Compartir / Código QR"
             android:backgroundTint="#0284C7"
             android:textColor="#FFFFFF" />
 
         <Button
-            android:id="@+id/btnVolver"
+            android:id="@+id/btnEditarCampana"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Volver a Campañas"
-            android:backgroundTint="#475569"
-            android:textColor="#FFFFFF" />
+            android:layout_marginBottom="12dp"
+            android:text="Editar Campaña"
+            android:backgroundTint="#0077FF"
+            android:textColor="#FFFFFF"
+            android:visibility="gone" />
 
         <Button
             android:id="@+id/btnEliminarCampana"
@@ -374,6 +382,16 @@
             android:layout_marginBottom="12dp"
             android:text="Eliminar Campaña"
             android:backgroundTint="#CC0000"
+            android:textColor="#FFFFFF"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/btnVolver"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            android:text="Volver a Campañas"
+            android:backgroundTint="#475569"
             android:textColor="#FFFFFF" />
     </LinearLayout>
 </ScrollView>

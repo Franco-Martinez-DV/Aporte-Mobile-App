@@ -37,8 +37,11 @@ import com.aporte.app.model.data.Campana;
 import com.aporte.app.model.data.Gasto;
 import com.aporte.app.model.data.IngresoExterno;
 import com.aporte.app.model.data.SlotIndumentaria;
+import com.aporte.app.utils.AuthDialogHelper;
 import com.aporte.app.utils.FormatUtils;
 import com.aporte.app.utils.ImageHelper;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.io.InputStream;
 import java.net.URL;
@@ -56,12 +59,12 @@ public class DetalleCampana extends AppCompatActivity {
     private TextView tvCategoria, tvEstado, tvTitulo, tvFechaLimite, tvRecaudado, tvMeta, tvDescripcion;
     private ProgressBar pbProgreso;
     private EditText etMontoAporte;
-    private Button btnVolver, btnAportar, btnEliminarCampana;
+    private Button btnVolver, btnAportar, btnEditarCampana, btnEliminarCampana;
     private Campana campanaActual;
     private EditText etConceptoIngresoExterno, etMontoIngresoExterno;
     private Button btnGuardarIngresoExterno;
 
-    private CardView cardCamisetaVirtual;
+    private CardView cardSimularAporte, cardCamisetaVirtual, cardIngresoExterno;
     private TextView tvEstadoSlots;
     private Button btnVerCamiseta;
     private Button btnCompartirQR;
@@ -87,6 +90,17 @@ public class DetalleCampana extends AppCompatActivity {
                 }
             });
 
+    private final ActivityResultLauncher<Intent> launcherEditarCampana =
+            registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    Campana actualizada = (Campana) result.getData().getSerializableExtra("campana_actualizada");
+                    if (actualizada != null) {
+                        campanaActual = actualizada;
+                        mostrarDatosCampana(campanaActual);
+                    }
+                }
+            });
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -103,8 +117,13 @@ public class DetalleCampana extends AppCompatActivity {
         etMontoAporte = findViewById(R.id.etMontoAporte);
         btnAportar = findViewById(R.id.btnAportar);
         btnVolver = findViewById(R.id.btnVolver);
+        btnEditarCampana = findViewById(R.id.btnEditarCampana);
         btnEliminarCampana = findViewById(R.id.btnEliminarCampana);
+
+        cardSimularAporte = findViewById(R.id.cardSimularAporte);
         cardCamisetaVirtual = findViewById(R.id.cardCamisetaVirtual);
+        cardIngresoExterno = findViewById(R.id.cardIngresoExterno);
+
         tvEstadoSlots = findViewById(R.id.tvEstadoSlots);
         btnVerCamiseta = findViewById(R.id.btnVerCamiseta);
         btnCompartirQR = findViewById(R.id.btnCompartirQR);
@@ -117,6 +136,7 @@ public class DetalleCampana extends AppCompatActivity {
         btnGuardarIngresoExterno = findViewById(R.id.btnGuardarIngresoExterno);
 
         btnCompartirQR.setOnClickListener(v -> abrirDialogoCompartirQR());
+        btnEditarCampana.setOnClickListener(v -> abrirEdicionCampana());
         btnEliminarCampana.setOnClickListener(v -> confirmarEliminacionCampana());
         btnVolver.setOnClickListener(v -> finish());
         btnGuardarIngresoExterno.setOnClickListener(v -> realizarIngresoExterno());
@@ -134,6 +154,21 @@ public class DetalleCampana extends AppCompatActivity {
         }
     }
 
+    private void abrirEdicionCampana() {
+        if (campanaActual == null) return;
+        Intent intent = new Intent(DetalleCampana.this, CrearCampana.class);
+        intent.putExtra("campana_editar", campanaActual);
+        launcherEditarCampana.launch(intent);
+    }
+
+    private boolean esCreadorDeCampana(Campana c) {
+        FirebaseUser usuario = FirebaseAuth.getInstance().getCurrentUser();
+        return usuario != null
+                && c != null
+                && c.getCreadorId() != null
+                && c.getCreadorId().equals(usuario.getUid());
+    }
+
     private void mostrarDatosCampana(Campana c) {
         ImageHelper.cargarImagen(c.getImagenUrl(), ivDetallePortada);
         tvTitulo.setText(c.getTitulo());
@@ -146,12 +181,29 @@ public class DetalleCampana extends AppCompatActivity {
         tvMeta.setText("Meta propuesta: " + FormatUtils.formatearMoneda(c.getMontoObjetivo()));
         pbProgreso.setProgress(FormatUtils.calcularPorcentaje(c.getRecaudado(), c.getMontoObjetivo()));
 
-        if ("patrocinio".equalsIgnoreCase(c.getTipo())) {
-            cardCamisetaVirtual.setVisibility(View.VISIBLE);
-            actualizarResumenSlots(c);
-            btnVerCamiseta.setOnClickListener(v -> abrirDialogoCamiseta(c));
-        } else {
+        boolean esCreador = esCreadorDeCampana(c);
+
+        if (esCreador) {
+            cardSimularAporte.setVisibility(View.GONE);
             cardCamisetaVirtual.setVisibility(View.GONE);
+            cardIngresoExterno.setVisibility(View.VISIBLE);
+            btnRendirGasto.setVisibility(View.VISIBLE);
+            btnEditarCampana.setVisibility(View.VISIBLE);
+            btnEliminarCampana.setVisibility(View.VISIBLE);
+        } else {
+            cardSimularAporte.setVisibility(View.VISIBLE);
+            cardIngresoExterno.setVisibility(View.GONE);
+            btnRendirGasto.setVisibility(View.GONE);
+            btnEditarCampana.setVisibility(View.GONE);
+            btnEliminarCampana.setVisibility(View.GONE);
+
+            if ("patrocinio".equalsIgnoreCase(c.getTipo())) {
+                cardCamisetaVirtual.setVisibility(View.VISIBLE);
+                actualizarResumenSlots(c);
+                btnVerCamiseta.setOnClickListener(v -> abrirDialogoCamiseta(c));
+            } else {
+                cardCamisetaVirtual.setVisibility(View.GONE);
+            }
         }
 
         actualizarResumenTransparencia(c);
@@ -201,6 +253,11 @@ public class DetalleCampana extends AppCompatActivity {
     }
 
     private void realizarAporte() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            AuthDialogHelper.mostrarDialogoAuth(this, () -> mostrarDatosCampana(campanaActual));
+            return;
+        }
+
         String montoStr = etMontoAporte.getText().toString().trim();
 
         if (montoStr.isEmpty()) {
@@ -241,7 +298,7 @@ public class DetalleCampana extends AppCompatActivity {
                     etMontoAporte.setText("");
                     Toast.makeText(DetalleCampana.this, "¡Gracias por tu aporte de " + FormatUtils.formatearMoneda(monto) + "!", Toast.LENGTH_LONG).show();
                 } else {
-                    Toast.makeText(DetalleCampana.this, "Error al procesar el aporte", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(DetalleCampana.this, "No se pudo procesar el aporte", Toast.LENGTH_SHORT).show();
                 }
             }
 
@@ -316,6 +373,11 @@ public class DetalleCampana extends AppCompatActivity {
     }
 
     private void abrirDialogoCamiseta(Campana c) {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            AuthDialogHelper.mostrarDialogoAuth(this, () -> mostrarDatosCampana(campanaActual));
+            return;
+        }
+
         if (c.getSlotsIndumentaria() == null || c.getSlotsIndumentaria().isEmpty()) {
             Toast.makeText(this, "Esta campaña no posee grilla de indumentaria configurada", Toast.LENGTH_SHORT).show();
             return;

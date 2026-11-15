@@ -1,15 +1,18 @@
 package com.aporte.app;
 
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.View;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,9 +22,12 @@ import com.aporte.app.data.api.RetrofitClient;
 import com.aporte.app.model.data.ApiResponse;
 import com.aporte.app.model.data.Campana;
 import com.aporte.app.ui.adapter.CampanaAdapter;
+import com.aporte.app.utils.AuthDialogHelper;
 import com.google.android.material.chip.Chip;
 import com.google.android.material.chip.ChipGroup;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +43,7 @@ public class MainActivity extends AppCompatActivity {
     private CampanaAdapter adapter;
     private SwipeRefreshLayout swipeRefreshLayout;
     private FloatingActionButton fabCrearCampana;
+    private Button btnSesion;
 
     private EditText etBuscarCampana;
     private ChipGroup chipGroupCategorias;
@@ -53,6 +60,7 @@ public class MainActivity extends AppCompatActivity {
         recyclerView = findViewById(R.id.recyclerViewCampanas);
         swipeRefreshLayout = findViewById(R.id.swipeRefreshLayout);
         fabCrearCampana = findViewById(R.id.fabCrearCampana);
+        btnSesion = findViewById(R.id.btnSesion);
         etBuscarCampana = findViewById(R.id.etBuscarCampana);
         chipGroupCategorias = findViewById(R.id.chipGroupCategorias);
         tvSinResultados = findViewById(R.id.tvSinResultados);
@@ -63,9 +71,17 @@ public class MainActivity extends AppCompatActivity {
 
         swipeRefreshLayout.setOnRefreshListener(this::cargarCampanasDesdeApi);
 
+        btnSesion.setOnClickListener(v -> manejarClickSesion());
+
         fabCrearCampana.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, CrearCampana.class);
-            startActivity(intent);
+            if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+                AuthDialogHelper.mostrarDialogoAuth(this, () -> {
+                    actualizarEstadoSesionUI();
+                    startActivity(new Intent(MainActivity.this, CrearCampana.class));
+                });
+                return;
+            }
+            startActivity(new Intent(MainActivity.this, CrearCampana.class));
         });
 
         etBuscarCampana.addTextChangedListener(new TextWatcher() {
@@ -95,7 +111,38 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
+        actualizarEstadoSesionUI();
         cargarCampanasDesdeApi();
+    }
+
+    private void actualizarEstadoSesionUI() {
+        FirebaseUser usuario = FirebaseAuth.getInstance().getCurrentUser();
+        if (usuario != null && usuario.getEmail() != null) {
+            String correoCorto = usuario.getEmail().split("@")[0];
+            btnSesion.setText(correoCorto + " (Salir)");
+            btnSesion.setBackgroundColor(Color.parseColor("#1E293B"));
+        } else {
+            btnSesion.setText("Iniciar Sesión");
+            btnSesion.setBackgroundColor(Color.parseColor("#0077FF"));
+        }
+    }
+
+    private void manejarClickSesion() {
+        FirebaseUser usuario = FirebaseAuth.getInstance().getCurrentUser();
+        if (usuario == null) {
+            AuthDialogHelper.mostrarDialogoAuth(this, this::actualizarEstadoSesionUI);
+        } else {
+            new AlertDialog.Builder(this)
+                    .setTitle("Sesión Activa")
+                    .setMessage("Conectado como: " + usuario.getEmail())
+                    .setPositiveButton("Cerrar Sesión", (d, which) -> {
+                        FirebaseAuth.getInstance().signOut();
+                        actualizarEstadoSesionUI();
+                        Toast.makeText(this, "Sesión cerrada", Toast.LENGTH_SHORT).show();
+                    })
+                    .setNegativeButton("Cancelar", null)
+                    .show();
+        }
     }
 
     private void cargarCampanasDesdeApi() {

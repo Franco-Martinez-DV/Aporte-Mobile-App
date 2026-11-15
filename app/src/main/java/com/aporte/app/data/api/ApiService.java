@@ -11,6 +11,7 @@ import retrofit2.http.DELETE;
 import retrofit2.http.GET;
 import retrofit2.http.POST;
 import retrofit2.http.Path;
+import retrofit2.http.PUT;
 
 public interface ApiService {
 
@@ -19,6 +20,9 @@ public interface ApiService {
 
     @POST("campanas")
     Call<ApiResponse<Campana>> crearCampana(@Body Campana campana);
+
+    @PUT("campanas/{id}")
+    Call<ApiResponse<Campana>> actualizarCampana(@Path("id") String id, @Body Campana campana);
 
     @DELETE("campanas/{id}")
     Call<ApiResponse<Object>> eliminarCampana(@Path("id") String id);
