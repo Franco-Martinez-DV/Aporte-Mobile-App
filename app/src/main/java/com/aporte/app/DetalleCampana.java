@@ -54,19 +54,21 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+import com.google.gson.JsonObject;
+
 public class DetalleCampana extends AppCompatActivity {
 
     private TextView tvCategoria, tvDetalleTipo, tvEstado, tvTitulo, tvFechaLimite, tvRecaudado, tvMeta, tvDescripcion;
     private ProgressBar pbProgreso;
     private EditText etMontoAporte;
-    private Button btnVolver, btnAportar, btnEditarCampana, btnEliminarCampana;
+    private Button btnVolver, btnPagarMercadoPago, btnAportar, btnEditarCampana, btnEliminarCampana;
     private Campana campanaActual;
     private EditText etConceptoIngresoExterno, etMontoIngresoExterno;
     private Button btnGuardarIngresoExterno;
 
-    private CardView cardSimularAporte, cardCamisetaVirtual, cardIngresoExterno;
+    private CardView cardSimularAporte, cardCamisetaVirtual, cardIngresoExterno, cardEsperandoMP;
     private TextView tvTituloPatrocinio, tvEstadoSlots;
-    private Button btnVerCamiseta;
+    private Button btnVerCamiseta, btnVerificarPagoMP;
     private Button btnCompartirQR;
 
     private TextView tvResumenTransparencia;
@@ -78,6 +80,9 @@ public class DetalleCampana extends AppCompatActivity {
     private Button btnRendirGasto;
     private Uri uriFacturaSeleccionada = null;
     private TextView tvNombreArchivoDialogo = null;
+
+    private boolean esperandoPagoMP = false;
+    private boolean sincronizandoMP = false;
 
     private final ActivityResultLauncher<String[]> selectorFactura =
             registerForActivityResult(new ActivityResultContracts.OpenDocument(), uri -> {
@@ -116,6 +121,7 @@ public class DetalleCampana extends AppCompatActivity {
         tvDescripcion = findViewById(R.id.tvDetalleDescripcion);
         pbProgreso = findViewById(R.id.pbDetalleProgreso);
         etMontoAporte = findViewById(R.id.etMontoAporte);
+        btnPagarMercadoPago = findViewById(R.id.btnPagarMercadoPago);
         btnAportar = findViewById(R.id.btnAportar);
         btnVolver = findViewById(R.id.btnVolver);
         btnEditarCampana = findViewById(R.id.btnEditarCampana);
@@ -124,6 +130,8 @@ public class DetalleCampana extends AppCompatActivity {
         cardSimularAporte = findViewById(R.id.cardSimularAporte);
         cardCamisetaVirtual = findViewById(R.id.cardCamisetaVirtual);
         cardIngresoExterno = findViewById(R.id.cardIngresoExterno);
+        cardEsperandoMP = findViewById(R.id.cardEsperandoMP);
+        btnVerificarPagoMP = findViewById(R.id.btnVerificarPagoMP);
 
         tvTituloPatrocinio = findViewById(R.id.tvTituloPatrocinio);
         tvEstadoSlots = findViewById(R.id.tvEstadoSlots);
@@ -142,6 +150,7 @@ public class DetalleCampana extends AppCompatActivity {
         btnEliminarCampana.setOnClickListener(v -> confirmarEliminacionCampana());
         btnVolver.setOnClickListener(v -> finish());
         btnGuardarIngresoExterno.setOnClickListener(v -> realizarIngresoExterno());
+        btnVerificarPagoMP.setOnClickListener(v -> verificarPagosPendientes(true));
 
         ivDetallePortada = findViewById(R.id.ivDetallePortada);
 
@@ -152,8 +161,175 @@ public class DetalleCampana extends AppCompatActivity {
 
         if (campanaActual != null) {
             mostrarDatosCampana(campanaActual);
+            btnPagarMercadoPago.setOnClickListener(v -> iniciarPagoAporteMP());
             btnAportar.setOnClickListener(v -> realizarAporte());
         }
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (esperandoPagoMP && FirebaseAuth.getInstance().getCurrentUser() != null) {
+            verificarPagosPendientes(false);
+            new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                if (esperandoPagoMP) verificarPagosPendientes(false);
+            }, 3000);
+        }
+    }
+
+    private void iniciarPagoAporteMP() {
+        if (FirebaseAuth.getInstance().getCurrentUser() == null) {
+            AuthDialogHelper.mostrarDialogoAuth(this, () -> mostrarDatosCampana(campanaActual));
+            return;
+        }
+
+        String montoStr = etMontoAporte.getText().toString().trim();
+        if (montoStr.isEmpty()) {
+            Toast.makeText(this, "Ingresá un monto a aportar", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double monto;
+        try {
+            monto = Double.parseDouble(montoStr);
+        } catch (NumberFormatException e) {
+            Toast.makeText(this, "Ingresá un monto numérico válido", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (monto <= 0) {
+            Toast.makeText(this, "El monto debe ser mayor a 0", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (campanaActual == null || campanaActual.getId() == null) return;
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("tipoOperacion", "aporte");
+        body.put("campanaId", campanaActual.getId());
+        body.put("monto", monto);
+
+        lanzarCheckoutMercadoPago(body);
+    }
+
+    private void iniciarPagoPatrocinioMP(String idSlot, String empresa, String cuit) {
+        if (campanaActual == null || campanaActual.getId() == null) return;
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("tipoOperacion", "patrocinio");
+        body.put("campanaId", campanaActual.getId());
+        body.put("idSlot", idSlot);
+        body.put("nombreEmpresa", empresa);
+        body.put("cuit", cuit);
+
+        lanzarCheckoutMercadoPago(body);
+    }
+
+    private void lanzarCheckoutMercadoPago(Map<String, Object> body) {
+        btnPagarMercadoPago.setEnabled(false);
+        btnPagarMercadoPago.setText("Conectando con Mercado Pago...");
+
+        RetrofitClient.getApiService().crearPreferenciaPago(body).enqueue(new Callback<ApiResponse<JsonObject>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<JsonObject>> call, Response<ApiResponse<JsonObject>> response) {
+                btnPagarMercadoPago.setEnabled(true);
+                btnPagarMercadoPago.setText("Pagar con Mercado Pago");
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess() && response.body().getData() != null) {
+                    JsonObject data = response.body().getData();
+                    String urlCheckout = null;
+                    if (data.has("initPoint") && !data.get("initPoint").isJsonNull()) {
+                        urlCheckout = data.get("initPoint").getAsString();
+                    } else if (data.has("sandboxInitPoint") && !data.get("sandboxInitPoint").isJsonNull()) {
+                        urlCheckout = data.get("sandboxInitPoint").getAsString();
+                    }
+
+                    if (urlCheckout == null || urlCheckout.isEmpty()) {
+                        Toast.makeText(DetalleCampana.this, "No se recibió enlace de pago", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    esperandoPagoMP = true;
+                    cardEsperandoMP.setVisibility(View.VISIBLE);
+
+                    try {
+                        Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(urlCheckout));
+                        startActivity(intent);
+                    } catch (Exception e) {
+                        Toast.makeText(DetalleCampana.this, "No se encontró un navegador para abrir Mercado Pago", Toast.LENGTH_LONG).show();
+                    }
+                } else {
+                    Toast.makeText(DetalleCampana.this, "No se pudo iniciar el pago con Mercado Pago", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<JsonObject>> call, Throwable t) {
+                btnPagarMercadoPago.setEnabled(true);
+                btnPagarMercadoPago.setText("Pagar con Mercado Pago");
+                Toast.makeText(DetalleCampana.this, "Error de red: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void verificarPagosPendientes(boolean mostrarMensajeSiNoHay) {
+        if (sincronizandoMP || FirebaseAuth.getInstance().getCurrentUser() == null) return;
+        sincronizandoMP = true;
+        btnVerificarPagoMP.setEnabled(false);
+
+        RetrofitClient.getApiService().sincronizarPagosMP().enqueue(new Callback<ApiResponse<List<JsonObject>>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<List<JsonObject>>> call, Response<ApiResponse<List<JsonObject>>> response) {
+                sincronizandoMP = false;
+                btnVerificarPagoMP.setEnabled(true);
+
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess()) {
+                    List<JsonObject> acreditados = response.body().getData();
+                    if (acreditados != null && !acreditados.isEmpty()) {
+                        esperandoPagoMP = false;
+                        cardEsperandoMP.setVisibility(View.GONE);
+                        etMontoAporte.setText("");
+
+                        JsonObject ultimo = acreditados.get(acreditados.size() - 1);
+                        String paymentId = (ultimo.has("paymentId") && !ultimo.get("paymentId").isJsonNull())
+                                ? ultimo.get("paymentId").getAsString() : "";
+                        double monto = (ultimo.has("monto") && !ultimo.get("monto").isJsonNull())
+                                ? ultimo.get("monto").getAsDouble() : 0;
+
+                        new AlertDialog.Builder(DetalleCampana.this)
+                                .setTitle("¡Pago Aprobado y Acreditado!")
+                                .setMessage("Operación #" + paymentId + " confirmada por " + FormatUtils.formatearMoneda(monto) + ".")
+                                .setPositiveButton("Aceptar", null)
+                                .show();
+
+                        recargarCampanaActual();
+                    } else if (mostrarMensajeSiNoHay) {
+                        Toast.makeText(DetalleCampana.this, "Aún no se detecta el pago aprobado. Si ya pagaste, aguardá unos segundos.", Toast.LENGTH_LONG).show();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<List<JsonObject>>> call, Throwable t) {
+                sincronizandoMP = false;
+                btnVerificarPagoMP.setEnabled(true);
+            }
+        });
+    }
+    private void recargarCampanaActual() {
+        if (campanaActual == null || campanaActual.getId() == null) return;
+        RetrofitClient.getApiService().obtenerCampanaPorId(campanaActual.getId()).enqueue(new Callback<ApiResponse<Campana>>() {
+            @Override
+            public void onResponse(Call<ApiResponse<Campana>> call, Response<ApiResponse<Campana>> response) {
+                if (response.isSuccessful() && response.body() != null && response.body().isSuccess() && response.body().getData() != null) {
+                    campanaActual = response.body().getData();
+                    mostrarDatosCampana(campanaActual);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse<Campana>> call, Throwable t) {}
+        });
     }
 
     private void abrirEdicionCampana() {
@@ -464,12 +640,23 @@ public class DetalleCampana extends AppCompatActivity {
                 .setTitle("Patrocinar: " + slot.getPosicion())
                 .setMessage("Monto a abonar: " + FormatUtils.formatearMoneda(slot.getPrecio()))
                 .setView(layout)
-                .setPositiveButton("Confirmar Patrocinio", (d, which) -> {
+                .setPositiveButton("Pagar con Mercado Pago", (d, which) -> {
                     String empresa = etEmpresa.getText().toString().trim();
                     String cuit = etCuit.getText().toString().trim();
 
                     if (empresa.isEmpty()) {
-                        Toast.makeText(this, "Debes ingresar el nombre de la empresa", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(this, "Debés ingresar el nombre de la empresa", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    iniciarPagoPatrocinioMP(slot.getIdSlot(), empresa, cuit);
+                })
+                .setNeutralButton("Simular directo", (d, which) -> {
+                    String empresa = etEmpresa.getText().toString().trim();
+                    String cuit = etCuit.getText().toString().trim();
+
+                    if (empresa.isEmpty()) {
+                        Toast.makeText(this, "Debés ingresar el nombre de la empresa", Toast.LENGTH_SHORT).show();
                         return;
                     }
 
@@ -480,11 +667,15 @@ public class DetalleCampana extends AppCompatActivity {
 
         dialog.show();
 
+        int colorMP = Color.parseColor("#009EE3");
         int colorAzul = Color.parseColor("#0077FF");
         int colorGris = Color.parseColor("#64748B");
 
         if (dialog.getButton(AlertDialog.BUTTON_POSITIVE) != null) {
-            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(colorAzul);
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(colorMP);
+        }
+        if (dialog.getButton(AlertDialog.BUTTON_NEUTRAL) != null) {
+            dialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(colorAzul);
         }
         if (dialog.getButton(AlertDialog.BUTTON_NEGATIVE) != null) {
             dialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(colorGris);

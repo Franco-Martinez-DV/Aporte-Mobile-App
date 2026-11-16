@@ -11,6 +11,50 @@
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardEsperandoMP"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="14dp"
+            android:visibility="gone"
+            app:cardCornerRadius="12dp"
+            app:cardBackgroundColor="#E0F2FE"
+            app:cardElevation="2dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="14dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Pago en Mercado Pago en curso"
+                    android:textColor="#0369A1"
+                    android:textStyle="bold"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Completá el pago en el navegador y volvé a esta pantalla para acreditarlo automáticamente."
+                    android:textColor="#0C4A6E"
+                    android:textSize="12sp"
+                    android:layout_marginTop="2dp"
+                    android:layout_marginBottom="8dp" />
+
+                <Button
+                    android:id="@+id/btnVerificarPagoMP"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Verificar Acreditación Ahora"
+                    android:backgroundTint="#009EE3"
+                    android:textColor="#FFFFFF"
+                    android:textSize="12sp" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -224,39 +268,42 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Simular Aporte"
+                    android:text="Realizar Aporte"
                     android:textColor="#166534"
                     android:textStyle="bold"
                     android:textSize="15sp"
                     android:layout_marginBottom="8dp" />
 
-                <LinearLayout
+                <EditText
+                    android:id="@+id/etMontoAporte"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:gravity="center_vertical">
+                    android:hint="Monto ($)"
+                    android:inputType="number"
+                    android:text="5000"
+                    android:background="#FFFFFF"
+                    android:padding="10dp"
+                    android:textSize="15sp"
+                    android:layout_marginBottom="10dp" />
 
-                    <EditText
-                        android:id="@+id/etMontoAporte"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:hint="Monto ($)"
-                        android:inputType="number"
-                        android:text="5000"
-                        android:background="#FFFFFF"
-                        android:padding="10dp"
-                        android:textSize="15sp"
-                        android:layout_marginEnd="8dp"/>
+                <Button
+                    android:id="@+id/btnPagarMercadoPago"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Pagar con Mercado Pago"
+                    android:backgroundTint="#009EE3"
+                    android:textColor="#FFFFFF"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="6dp" />
 
-                    <Button
-                        android:id="@+id/btnAportar"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Aportar"
-                        android:backgroundTint="#16A34A"
-                        android:textColor="#FFFFFF" />
-                </LinearLayout>
+                <Button
+                    android:id="@+id/btnAportar"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Simular aporte directo (sin pasarela)"
+                    android:backgroundTint="#DCFCE7"
+                    android:textColor="#166534"
+                    android:textSize="12sp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -339,7 +386,7 @@
                     android:background="#FFFFFF"
                     android:padding="10dp"
                     android:textSize="14sp"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="8dp" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -357,7 +404,7 @@
                         android:background="#FFFFFF"
                         android:padding="10dp"
                         android:textSize="14sp"
-                        android:layout_marginEnd="8dp"/>
+                        android:layout_marginEnd="8dp" />
 
                     <Button
                         android:id="@+id/btnGuardarIngresoExterno"

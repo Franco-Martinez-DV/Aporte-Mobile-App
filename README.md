@@ -1,6 +1,6 @@
 # APORTE Mobile - Aplicación Nativa Android
 
-Aplicación móvil nativa para Android desarrollada en **Java**, que forma parte del ecosistema **APORTE** para el crowdfunding deportivo amateur. Permite a usuarios, deportistas y patrocinadores consultar campañas activas en tiempo real, realizar aportes económicos, patrocinar espacios publicitarios en la **Camiseta Virtual**, declarar ingresos externos y compartir campañas mediante código QR e integración nativa con redes sociales, rendir gastos adjuntando facturas en **PDF o imagen**, y generar folletos imprimibles con código QR
+Aplicación móvil nativa para Android desarrollada en **Java**, que forma parte del ecosistema **APORTE** para el crowdfunding deportivo amateur. Permite a usuarios, deportistas y patrocinadores consultar campañas activas en tiempo real, crear campañas tanto de Donación Estándar como de Patrocinio (con espacios publicitarios dinámicos según la categoría: indumentaria para deportistas individuales, camiseta y/o instalaciones/predio para clubes, y naming/cartelería para ligas o torneos), realizar aportes económicos, patrocinar espacios publicitarios en la **Camiseta Virtual**, declarar ingresos externos y compartir campañas mediante código QR e integración nativa con redes sociales, rendir gastos adjuntando facturas en **PDF o imagen**, y generar folletos imprimibles con código QR
 
 ---
 
@@ -10,7 +10,7 @@ La aplicación móvil actúa como cliente nativo conectado a la misma API RESTfu
 
 Está estructurada mediante separación de responsabilidades en paquetes:
 
-* **`com.aporte.app` (Capa de Presentación / Activities):** Controladores de interfaz de usuario (`MainActivity`, `DetalleCampana`,`CrearCampana` ) encargados del ciclo de vida de pantallas, renderizado de progreso y diálogos interactivos, filtrado dinámico de acciones según rol
+* **`com.aporte.app` (Capa de Presentación / Activities):** Controladores de interfaz de usuario (`MainActivity`, `DetalleCampana`,`CrearCampana` ) encargados del ciclo de vida de pantallas, configuración dinámica de modalidades de patrocinio por categoría, renderizado de progreso y diálogos interactivos, filtrado dinámico de acciones según rol
 * **`com.aporte.app.data.api` (Capa de Red):** Configuración del cliente HTTP mediante **Retrofit 2** (`RetrofitClient`), con interceptor automático de tokens JWT de Firebase Auth y definición de contratos de endpoints (`ApiService`)
 * **`com.aporte.app.model.data` (Capa de Modelos / DTOs):** Clases serializables mapeadas con **Gson** (`ApiResponse`, `Campana`, `SlotIndumentaria`,`IngresoExterno`, `Gasto`)
 * **`com.aporte.app.utils` (Utilidades y Servicios Auxiliares):** Gestión de diálogos de inicio de sesión/registro (`AuthDialogHelper`), subida de imágenes y comprobantes PDF a Cloudinary (`ImageHelper`) y formateo de moneda/fechas (`FormatUtils`)
